@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 3.21.0 )
 
-project(Controller VERSION 1.0 LANGUAGES CXX)
+project(Controller VERSION 1.0 DESCRIPTION "Actuator Controller" LANGUAGES CXX )
 
-message("Configure Actuator Controller Project")
+message("Configure Project")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
@@ -12,7 +12,7 @@ include_directories(include)
 
 add_subdirectory(src)
 
-message("Build Actuator Controller Project")
+message("Build Project")
 add_executable(Controller main.cpp)
 
 target_link_libraries(Controller actuator)
