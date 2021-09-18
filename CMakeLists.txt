@@ -8,6 +8,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
+include_directories(include)
+
+add_subdirectory(src)
+
 message("Build Actuator Controller Project")
 add_executable(Controller main.cpp)
 
+target_link_libraries(Controller actuator)
