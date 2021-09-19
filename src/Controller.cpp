@@ -4,8 +4,7 @@
 #include <tinyfsm/tinyfsm.hpp>
 
 #include "Controller.h"
-
-#include "mqtt/MqttStateMachine.h"
+#include "Driver.h"
 
 Controller::Controller()
 {
@@ -23,7 +22,7 @@ void Controller::run()
 
 	CycleEvent event;
 	
-	MqttStateMachine::start();
+	Driver::start();
 
 	while( true )
 	{
@@ -31,9 +30,9 @@ void Controller::run()
 
 		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
 		
-		if( MqttStateMachine::is_in_state<Idle>() ) break;
+		if( Driver::is_in_state<Idle>() ) break;
 
-		MqttStateMachine::dispatch( event );
+		Driver::dispatch( event );
 	}
 }
 
@@ -42,5 +41,5 @@ void Controller::halt()
 	spdlog::info("halt");
 
 	HaltEvent event;
-	MqttStateMachine::dispatch( event );
+	Driver::dispatch( event );
 }
