@@ -1,7 +1,7 @@
 #include <mosquitto.h>
 #include <spdlog/spdlog.h>
 
-#include "Driver.h"
+#include "Mosquitto.h"
 
 struct InitializeState;
 struct ConfigureState;
@@ -10,19 +10,19 @@ struct PublishState;
 struct DisconnectState;
 struct TerminateState;
 
-void Driver::react( HaltEvent const &) 
+void Mosquitto::react( HaltEvent const &) 
 { 
 	spdlog::info("Halt");
 	halt = true;
 };
 
-void Driver::entry() 
+void Mosquitto::entry() 
 { 
 	spdlog::trace("Entry");
 	cntr = 0;
 };
 
-void Driver::exit()
+void Mosquitto::exit()
 {   	
 	spdlog::trace("Exit");
 };
@@ -30,7 +30,7 @@ void Driver::exit()
 /**
  * State: Initialize
  **/
-struct InitializeState : Driver
+struct InitializeState : Mosquitto
 {
 	void react( CycleEvent const & ) override 
 	{
@@ -49,7 +49,7 @@ struct InitializeState : Driver
 	};
 };
 
-bool Driver::init_mosquitto() 
+bool Mosquitto::init_mosquitto() 
 {
 	int result;
 
@@ -68,7 +68,7 @@ bool Driver::init_mosquitto()
 /**
  * State: Configure
  **/
-struct ConfigureState: Driver
+struct ConfigureState: Mosquitto
 {
   void react( CycleEvent const & ) override 
   {
@@ -87,7 +87,7 @@ struct ConfigureState: Driver
   };
 };
 
-bool Driver::configure() 
+bool Mosquitto::configure() 
 {
 	int result;
 
@@ -122,7 +122,7 @@ bool Driver::configure()
 /**
  * State: Connect
  **/
-struct ConnectState : Driver
+struct ConnectState : Mosquitto
 {
   void react( CycleEvent const & ) override 
   {
@@ -141,7 +141,7 @@ struct ConnectState : Driver
   };
 };
 
-bool Driver::connect() 
+bool Mosquitto::connect() 
 {
 	int result;
 
@@ -168,7 +168,7 @@ bool Driver::connect()
 /**
  * State: Disconnect
  **/
-struct DisconnectState : Driver
+struct DisconnectState : Mosquitto
 {
   void react( CycleEvent const & ) override 
   {
@@ -186,7 +186,7 @@ struct DisconnectState : Driver
   };
 };
 
-bool Driver::disconnect() 
+bool Mosquitto::disconnect() 
 {
 	int result;
 
@@ -205,7 +205,7 @@ bool Driver::disconnect()
 /**
  * State: Terminate
  **/
-struct TerminateState: Driver
+struct TerminateState: Mosquitto
 {
   void react( CycleEvent const & ) override 
   {
@@ -223,7 +223,7 @@ struct TerminateState: Driver
   };
 };
 
-bool Driver::terminate() 
+bool Mosquitto::terminate() 
 {
 	int result;
 
@@ -246,7 +246,7 @@ bool Driver::terminate()
 /**
  * State: Publish
  **/
-struct PublishState : Driver
+struct PublishState : Mosquitto
 {
   	void react( CycleEvent const & ) override 
 	{
@@ -268,7 +268,7 @@ struct PublishState : Driver
 	};
 };
 
-bool Driver::publish() 
+bool Mosquitto::publish() 
 {
 	int result;
 	std::string topic, message;
@@ -289,4 +289,4 @@ bool Driver::publish()
 	return true;
 }
 
-FSM_INITIAL_STATE( Driver, InitializeState )
+FSM_INITIAL_STATE( Mosquitto, InitializeState )

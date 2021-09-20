@@ -4,7 +4,7 @@
 #include <tinyfsm/tinyfsm.hpp>
 
 #include "Controller.h"
-#include "Driver.h"
+#include "Mosquitto.h"
 
 Controller::Controller()
 {
@@ -22,7 +22,7 @@ void Controller::run()
 
 	CycleEvent event;
 	
-	Driver::start();
+	Mosquitto::start();
 
 	while( true )
 	{
@@ -30,9 +30,9 @@ void Controller::run()
 
 		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
 		
-		if( Driver::is_in_state<Idle>() ) break;
+		if( Mosquitto::is_in_state<Idle>() ) break;
 
-		Driver::dispatch( event );
+		Mosquitto::dispatch( event );
 	}
 }
 
@@ -41,5 +41,5 @@ void Controller::halt()
 	spdlog::info("halt");
 
 	HaltEvent event;
-	Driver::dispatch( event );
+	Mosquitto::dispatch( event );
 }

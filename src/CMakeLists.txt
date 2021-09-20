@@ -1,1 +1,1 @@
-add_library(controller OBJECT Controller.cpp Driver.cpp)
+add_library(controller OBJECT Controller.cpp Mosquitto.cpp)

@@ -12,7 +12,7 @@
 #include <iostream>
 #include <fstream>
 
-// Controller* controller;
+//Controller* controller;
 
 void terminate( int signal )
 {
@@ -35,6 +35,7 @@ int main( int argc, char *argv[] )
 	sigaction( SIGINT, &sigIntHandler, NULL );
 
 /* ### Sandbox ### */
+/*
 	spdlog::info("init filesystem");
 
 	const std::string directory = "/sys/class/pwm/pwmchip0/";
@@ -92,7 +93,7 @@ int main( int argc, char *argv[] )
 		spdlog::debug("Close unexport");
 		fsUnexport.close();
 	}
-
+*/
 
 /*
 	controller = new Controller();

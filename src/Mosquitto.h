@@ -8,7 +8,7 @@
 struct CycleEvent: tinyfsm::Event{};
 struct HaltEvent: tinyfsm::Event{};
 
-struct Driver : tinyfsm::Fsm<Driver>
+struct Mosquitto : tinyfsm::Fsm<Mosquitto>
 {
 	public:
 		inline static bool halt = false;
@@ -34,7 +34,7 @@ struct Driver : tinyfsm::Fsm<Driver>
 		inline static mosquitto* client = NULL;
 };
 
-struct Idle : Driver
+struct Idle : Mosquitto
 {
   void react( CycleEvent const & ) override 
   {
