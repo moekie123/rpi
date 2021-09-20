@@ -1,10 +1,3 @@
-#include <iostream>
-#include <fstream>
-
-#include <vector>
-#include <filesystem>
-#include <sys/stat.h>
-
 #include <mosquitto.h>
 #include <spdlog/spdlog.h>
 
