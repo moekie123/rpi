@@ -19,7 +19,8 @@ struct Driver : tinyfsm::Fsm<Driver>
 		virtual void react( CycleEvent const &) = 0;
 		virtual void react( HaltEvent const &);
 
-		virtual bool initialize();
+		virtual bool init_mosquitto();
+
 		virtual bool configure();
 		virtual bool connect();
 		virtual bool disconnect();

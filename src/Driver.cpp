@@ -1,3 +1,10 @@
+#include <iostream>
+#include <fstream>
+
+#include <vector>
+#include <filesystem>
+#include <sys/stat.h>
+
 #include <mosquitto.h>
 #include <spdlog/spdlog.h>
 
@@ -43,19 +50,18 @@ struct InitializeState : Driver
 			return;
 		}
 
-		if( this->initialize() )
+		if( this->init_mosquitto() )
 			transit<ConfigureState>();
 
 	};
 };
 
-bool Driver::initialize() 
+bool Driver::init_mosquitto() 
 {
 	int result;
 
-	spdlog::info("initialize");
+	spdlog::info("init mosquitto library");
 
-	spdlog::debug("init library");
 	result = mosquitto_lib_init();
 	if( result != MOSQ_ERR_SUCCESS )
 	{
