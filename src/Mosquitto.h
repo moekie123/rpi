@@ -5,8 +5,7 @@
 
 #include <mosquitto.h>
 
-struct CycleEvent: tinyfsm::Event{};
-struct HaltEvent: tinyfsm::Event{};
+#include "StateMachine.h"
 
 struct Mosquitto : tinyfsm::Fsm<Mosquitto>
 {

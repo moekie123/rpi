@@ -1,1 +1,1 @@
-add_library(controller OBJECT Controller.cpp Mosquitto.cpp)
+add_library(controller OBJECT Controller.cpp Channel.cpp Mosquitto.cpp)

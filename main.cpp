@@ -6,18 +6,12 @@
 
 #include "Controller.h"
 
-#include <vector>
-#include <filesystem>
-#include <sys/stat.h>
-#include <iostream>
-#include <fstream>
-
-//Controller* controller;
+Controller* controller;
 
 void terminate( int signal )
 {
 	spdlog::info("Terminate");
-//	controller->halt();
+	controller->halt();
 }
 
 int main( int argc, char *argv[] )
@@ -33,6 +27,10 @@ int main( int argc, char *argv[] )
 	sigIntHandler.sa_flags = 0;
 	
 	sigaction( SIGINT, &sigIntHandler, NULL );
+
+	controller = new Controller();
+	controller->run();
+	delete controller;
 
 /* ### Sandbox ### */
 /*
@@ -93,12 +91,6 @@ int main( int argc, char *argv[] )
 		spdlog::debug("Close unexport");
 		fsUnexport.close();
 	}
-*/
-
-/*
-	controller = new Controller();
-	controller->run();
-	delete controller;
 */
 
 	spdlog::info("Terminate Application");
