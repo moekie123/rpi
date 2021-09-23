@@ -4,7 +4,7 @@
 #include <mosquitto.h>
 #include <spdlog/spdlog.h>
 
-#include "Channel.h"
+#include "Device.h"
 
 template<int,int>
 struct InitializeState;
@@ -19,25 +19,25 @@ template<int,int>
 struct TerminateState;
 
 template<int iChip, int iChannel>
-void Channel<iChip,iChannel>::react( HaltEvent const &) 
+void Device<iChip,iChannel>::react( HaltEvent const &) 
 { 
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
 	spdlog::info("Halt");
 	base::halt = true;
 };
 
 template<int iChip, int iChannel>
-void Channel<iChip,iChannel>::entry() 
+void Device<iChip,iChannel>::entry() 
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
 	spdlog::trace("Entry");
 	base::cntr = 0;
 };
 
 template<int iChip, int iChannel>
-void Channel<iChip,iChannel>::exit()
+void Device<iChip,iChannel>::exit()
 {   	
 	spdlog::trace("Exit");
 };
@@ -46,9 +46,9 @@ void Channel<iChip,iChannel>::exit()
  * State: Initialize
  **/
 template<int iChip, int iChannel>
-struct InitializeState : Channel<iChip,iChannel>
+struct InitializeState : Device<iChip,iChannel>
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
 	void react( CycleEvent const & ) override 
 	{
@@ -68,9 +68,9 @@ struct InitializeState : Channel<iChip,iChannel>
 };
 
 template<int iChip, int iChannel>
-bool Channel<iChip,iChannel>::initialize() 
+bool Device<iChip,iChannel>::initialize() 
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
 	int nChannels;
 
@@ -82,7 +82,7 @@ bool Channel<iChip,iChannel>::initialize()
 
 	for ( auto file : fsChip) 
 	{
-		const std::string dFile = base::dChip + file;
+		const std::string dFile = base::fChip + file;
 
 		spdlog::debug("chip {}", dFile );
 		if( !std::filesystem::exists( dFile ) )
@@ -92,7 +92,7 @@ bool Channel<iChip,iChannel>::initialize()
 		}
 	}
 	
-	std::ifstream fsNpwm( base::dChip + "npwm" );
+	std::ifstream fsNpwm( base::fChip + "npwm" );
 	fsNpwm >> nChannels;
 	fsNpwm.close();
 
@@ -103,16 +103,16 @@ bool Channel<iChip,iChannel>::initialize()
 
 	this->enable();
 	
-	spdlog::info("channel {}", base::dChannel);
+	spdlog::info("channel {}", base::fChannel);
 
-	const std::vector<std::string> fsChannel = { "", "duty_cycle", "enable", "period",  "polarity" };
+	const std::vector<std::string> fsChannel = { "", "duty_cycle", "enable", "period" };
 
 	for ( auto file : fsChannel) 
 	{
-		spdlog::debug("channel io {}", base::dChannel + file );
-		if( !std::filesystem::exists( base::dChannel + file ) )
+		spdlog::debug("channel io {}", base::fChannel + file );
+		if( !std::filesystem::exists( base::fChannel + file ) )
 		{
-			spdlog::error("failed to find {}", base::dChannel + file );
+			spdlog::error("failed to find {}", base::fChannel + file );
 			return -1;
 		}
 	}
@@ -124,9 +124,9 @@ bool Channel<iChip,iChannel>::initialize()
  * State: Configure
  **/
 template<int iChip, int iChannel>
-struct ConfigureState: Channel<iChip,iChannel>
+struct ConfigureState: Device<iChip,iChannel>
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
   void react( CycleEvent const & ) override 
   {
@@ -145,14 +145,14 @@ struct ConfigureState: Channel<iChip,iChannel>
 };
 
 template<int iChip, int iChannel>
-bool Channel<iChip,iChannel>::configure() 
+bool Device<iChip,iChannel>::configure() 
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
 	spdlog::info("configure");
 
-	this->setPeriod( 20000000 );
-	this->setDutyCycle( dutycycle );
+	this->setPeriod( this->period );
+	this->setDutyCycle( this->dutycycle );
 	this->enable();
 
 	return true;
@@ -162,13 +162,13 @@ bool Channel<iChip,iChannel>::configure()
  * State: Control
  **/
 template<int iChip, int iChannel>
-struct ControlState : Channel<iChip,iChannel>
+struct ControlState : Device<iChip,iChannel>
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
   	void react( CycleEvent const & ) override 
 	{
-		spdlog::trace("Publish {}", base::cntr);
+		spdlog::trace("Control {}", base::cntr);
 		base::cntr += 1;
 
 		if( base::halt )
@@ -187,14 +187,14 @@ struct ControlState : Channel<iChip,iChannel>
 };
 
 template<int iChip, int iChannel>
-bool Channel<iChip,iChannel>::control() 
+bool Device<iChip,iChannel>::control() 
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
 	spdlog::info("control");
 
-	dutycycle += 100000;
-	this->setDutyCycle( dutycycle );
+	this->dutycycle += 100000;
+	this->setDutyCycle( this->dutycycle );
 
 	return true;
 }
@@ -203,9 +203,9 @@ bool Channel<iChip,iChannel>::control()
  * State: Terminate
  **/
 template<int iChip, int iChannel>
-struct TerminateState: Channel<iChip,iChannel>
+struct TerminateState: Device<iChip,iChannel>
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
   void react( CycleEvent const & ) override 
   {
@@ -224,9 +224,9 @@ struct TerminateState: Channel<iChip,iChannel>
 };
 
 template<int iChip, int iChannel>
-bool Channel<iChip,iChannel>::terminate() 
+bool Device<iChip,iChannel>::terminate() 
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
 	spdlog::info("terminate");
 
@@ -236,77 +236,77 @@ bool Channel<iChip,iChannel>::terminate()
 }
 
 template<int iChip, int iChannel>
-void Channel<iChip,iChannel>::enable()
+void Device<iChip,iChannel>::enable()
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
-	const std::string dExport = base::dChip + "export";
+	const std::string fExport = base::fChip + "export";
 	
-	spdlog::debug("{}::{}", dExport, iChannel);
+	spdlog::debug("{}::{}", fExport, iChannel);
 
-	std::ofstream fsExport( dExport );
+	std::ofstream fsExport( fExport );
 	fsExport << iChannel << '\n';
 	fsExport.close();
 
-	const std::string dEnable = base::dChannel + "enable";
+	const std::string fEnable = base::fChannel + "enable";
 	
-	spdlog::debug("{}::1", dEnable);
+	spdlog::debug("{}::1", fEnable);
 
-	std::ofstream fsEnable( dEnable );
+	std::ofstream fsEnable( fEnable );
 	fsEnable << 1 << '\n';
 	fsEnable.close();
 }
 
 template<int iChip, int iChannel>
-void Channel<iChip,iChannel>::disable()
+void Device<iChip,iChannel>::disable()
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
-	const std::string dEnable = base::dChannel + "enable";
+	const std::string fEnable = base::fChannel + "enable";
 
-	spdlog::debug("{}::0", dEnable);
+	spdlog::debug("{}::0", fEnable);
 
-	std::ofstream fsEnable( dEnable );
+	std::ofstream fsEnable( fEnable );
 	fsEnable << 0 << '\n';
 	fsEnable.close();
 
-	const std::string dUnexport = base::dChip + "unexport";
+	const std::string fUnexport = base::fChip + "unexport";
 	
-	spdlog::debug("{}::{}", dUnexport, iChannel);
+	spdlog::debug("{}::{}", fUnexport, iChannel);
 
-	std::ofstream fsUnexport( dUnexport );
+	std::ofstream fsUnexport( fUnexport );
 	fsUnexport << iChannel << '\n';
 	fsUnexport.close();
 }
 
 template<int iChip, int iChannel>
-void Channel<iChip,iChannel>::setPeriod( const long period )
+void Device<iChip,iChannel>::setPeriod( const long period )
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
-	const std::string dPeriod = base::dChannel + "period";
+	const std::string fPeriod = base::fChannel + "period";
 
-	spdlog::debug("{}::{}", dPeriod, period);
+	spdlog::debug("{}::{}", fPeriod, period);
 
-	std::ofstream fsPeriod( dPeriod );
+	std::ofstream fsPeriod( fPeriod );
 	fsPeriod << period << '\n';
 	fsPeriod.close();
 }
 
 template<int iChip, int iChannel>
-void Channel<iChip,iChannel>::setDutyCycle( const long dutycycle )
+void Device<iChip,iChannel>::setDutyCycle( const long dutycycle )
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
-	const std::string dDutyCycle = base::dChannel + "duty_cycle";
+	const std::string fDutyCycle = base::fChannel + "duty_cycle";
 
-	spdlog::debug("{}::{}", dDutyCycle, dutycycle);
+	spdlog::debug("{}::{}", fDutyCycle, dutycycle);
 
-	std::ofstream fsDutyCycle( dDutyCycle );
+	std::ofstream fsDutyCycle( fDutyCycle );
 	fsDutyCycle << dutycycle << '\n';
 	fsDutyCycle.close();
 }
 
 #define COMMA ,
-FSM_INITIAL_STATE( Channel<0 COMMA 14>, InitializeState<0 COMMA 14> )
-FSM_INITIAL_STATE( Channel<0 COMMA 15>, InitializeState<0 COMMA 15> )
+FSM_INITIAL_STATE( Device<0 COMMA 14>, InitializeState<0 COMMA 14> )
+FSM_INITIAL_STATE( Device<0 COMMA 15>, InitializeState<0 COMMA 15> )

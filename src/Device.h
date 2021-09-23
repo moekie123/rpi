@@ -11,7 +11,7 @@
 #include "StateMachine.h"
 
 template<int iChip, int iChannel>
-struct Channel : tinyfsm::Fsm<Channel<iChip,iChannel>>
+struct Device : tinyfsm::Fsm<Device<iChip,iChannel>>
 {
 	public:
 		inline static bool halt = false;
@@ -30,13 +30,14 @@ struct Channel : tinyfsm::Fsm<Channel<iChip,iChannel>>
 	protected:
 		int cntr;
 
+		inline static long period = 2000000;
 		inline static long dutycycle = 1000000;
 
 		inline static const int chipID = iChip;
 		inline static const int channelID = iChannel;
-		inline static const std::string dRoot = "/sys/class/pwm/";
-		inline static const std::string dChip = dRoot + "pwmchip" + std::to_string( chipID ) + "/";
-		inline static const std::string dChannel = dRoot + "pwm" + std::to_string( channelID ) + "/";
+		inline static const std::string fSystemRoot = "/sys/class/pwm/";
+		inline static const std::string fChip = fSystemRoot + "pwmchip" + std::to_string( chipID ) + "/";
+		inline static const std::string fChannel = fSystemRoot + "pwm" + std::to_string( channelID ) + "/";
 
 	private:
 		void enable();
@@ -47,9 +48,9 @@ struct Channel : tinyfsm::Fsm<Channel<iChip,iChannel>>
 };
 
 template<int iChip, int iChannel>
-struct Idle : Channel<iChip,iChannel>
+struct Idle : Device<iChip,iChannel>
 {
-	using base = Channel<iChip,iChannel>;
+	using base = Device<iChip,iChannel>;
 
 	void react( CycleEvent const & ) override 
 	{
