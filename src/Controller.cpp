@@ -6,6 +6,11 @@
 #include "Controller.h"
 #include "Channel.h"
 
+using channels = tinyfsm::FsmList<
+//	Channel<0,14>,
+	Channel<0,15>
+	>;
+
 Controller::Controller()
 {
 	spdlog::debug("construct");
@@ -22,7 +27,7 @@ void Controller::run()
 
 	CycleEvent event;
 	
-	Channel::start();
+	channels::start();
 
 	while( true )
 	{
@@ -30,9 +35,9 @@ void Controller::run()
 
 		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
 		
-		if( Channel::is_in_state<Idle>() ) break;
+		if( Channel<0,15>::is_in_state<Idle<0,15>>() ) break;
 
-		Channel::dispatch( event );
+		channels::dispatch( event );
 	}
 }
 
@@ -41,5 +46,5 @@ void Controller::halt()
 	spdlog::info("halt");
 
 	HaltEvent event;
-	Channel::dispatch( event );
+	channels::dispatch( event );
 }

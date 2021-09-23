@@ -6,24 +6,38 @@
 
 #include "Channel.h"
 
+template<int,int>
 struct InitializeState;
+
+template<int,int>
 struct ConfigureState;
+
+template<int,int>
 struct ControlState;
+
+template<int,int>
 struct TerminateState;
 
-void Channel::react( HaltEvent const &) 
+template<int iChip, int iChannel>
+void Channel<iChip,iChannel>::react( HaltEvent const &) 
 { 
+	using base = Channel<iChip,iChannel>;
+
 	spdlog::info("Halt");
-	halt = true;
+	base::halt = true;
 };
 
-void Channel::entry() 
-{ 
+template<int iChip, int iChannel>
+void Channel<iChip,iChannel>::entry() 
+{
+	using base = Channel<iChip,iChannel>;
+
 	spdlog::trace("Entry");
-	cntr = 0;
+	base::cntr = 0;
 };
 
-void Channel::exit()
+template<int iChip, int iChannel>
+void Channel<iChip,iChannel>::exit()
 {   	
 	spdlog::trace("Exit");
 };
@@ -31,27 +45,33 @@ void Channel::exit()
 /**
  * State: Initialize
  **/
-struct InitializeState : Channel
+template<int iChip, int iChannel>
+struct InitializeState : Channel<iChip,iChannel>
 {
+	using base = Channel<iChip,iChannel>;
+
 	void react( CycleEvent const & ) override 
 	{
-		spdlog::trace("Initialize {}", cntr);
-		cntr += 1;
+		spdlog::trace("Initialize {}", base::cntr);
+		base::cntr += 1;
 
-		if( cntr >= 3 || halt )
+		if( base::cntr >= 3 || base::halt )
 		{
-			transit<Idle>();
+			base::template transit<Idle<iChip,iChannel>>();
 			return;
 		}
 
 		if( this->initialize() )
-			transit<ConfigureState>();
+			base::template transit<ConfigureState<iChip,iChannel>>();
 
 	};
 };
 
-bool Channel::initialize() 
+template<int iChip, int iChannel>
+bool Channel<iChip,iChannel>::initialize() 
 {
+	using base = Channel<iChip,iChannel>;
+
 	int nChannels;
 
 	spdlog::info("init filesystem");
@@ -62,7 +82,7 @@ bool Channel::initialize()
 
 	for ( auto file : fsChip) 
 	{
-		const std::string dFile = dChip + file;
+		const std::string dFile = base::dChip + file;
 
 		spdlog::debug("chip {}", dFile );
 		if( !std::filesystem::exists( dFile ) )
@@ -72,7 +92,7 @@ bool Channel::initialize()
 		}
 	}
 	
-	std::ifstream fsNpwm( dChip + "npwm" );
+	std::ifstream fsNpwm( base::dChip + "npwm" );
 	fsNpwm >> nChannels;
 	fsNpwm.close();
 
@@ -83,16 +103,16 @@ bool Channel::initialize()
 
 	this->enable();
 	
-	spdlog::info("channel {}", dChannel);
+	spdlog::info("channel {}", base::dChannel);
 
 	const std::vector<std::string> fsChannel = { "", "duty_cycle", "enable", "period",  "polarity" };
 
 	for ( auto file : fsChannel) 
 	{
-		spdlog::debug("channel io {}", dChannel + file );
-		if( !std::filesystem::exists( dChannel + file ) )
+		spdlog::debug("channel io {}", base::dChannel + file );
+		if( !std::filesystem::exists( base::dChannel + file ) )
 		{
-			spdlog::error("failed to find {}", dChannel + file );
+			spdlog::error("failed to find {}", base::dChannel + file );
 			return -1;
 		}
 	}
@@ -103,26 +123,32 @@ bool Channel::initialize()
 /**
  * State: Configure
  **/
-struct ConfigureState: Channel
+template<int iChip, int iChannel>
+struct ConfigureState: Channel<iChip,iChannel>
 {
+	using base = Channel<iChip,iChannel>;
+
   void react( CycleEvent const & ) override 
   {
-	spdlog::trace("Configure {}", cntr);
-	cntr += 1;
+	spdlog::trace("Configure {}", base::cntr);
+	base::cntr += 1;
 
-	if( cntr >= 3 || halt )
+	if( base::cntr >= 3 || base::halt )
 	{
-		transit<InitializeState>();
+		base::template transit<InitializeState<iChip,iChannel>>();
 		return;
 	}
 
 	if( this->configure() )
-		transit<ControlState>();
+		base::template transit<ControlState<iChip,iChannel>>();
   };
 };
 
-bool Channel::configure() 
+template<int iChip, int iChannel>
+bool Channel<iChip,iChannel>::configure() 
 {
+	using base = Channel<iChip,iChannel>;
+
 	spdlog::info("configure");
 
 	this->setPeriod( 20000000 );
@@ -135,16 +161,19 @@ bool Channel::configure()
 /**
  * State: Control
  **/
-struct ControlState : Channel
+template<int iChip, int iChannel>
+struct ControlState : Channel<iChip,iChannel>
 {
+	using base = Channel<iChip,iChannel>;
+
   	void react( CycleEvent const & ) override 
 	{
-		spdlog::trace("Publish {}", cntr);
-		cntr += 1;
+		spdlog::trace("Publish {}", base::cntr);
+		base::cntr += 1;
 
-		if( halt )
+		if( base::halt )
 		{
-			transit<TerminateState>();
+			base::template transit<TerminateState<iChip,iChannel>>();
 			return;
 		}
 
@@ -153,12 +182,15 @@ struct ControlState : Channel
 
 		}	
 		else
-			transit<ConfigureState>();
+			base::template transit<ConfigureState<iChip,iChannel>>();
 	};
 };
 
-bool Channel::control() 
+template<int iChip, int iChannel>
+bool Channel<iChip,iChannel>::control() 
 {
+	using base = Channel<iChip,iChannel>;
+
 	spdlog::info("control");
 
 	dutycycle += 100000;
@@ -170,26 +202,32 @@ bool Channel::control()
 /**
  * State: Terminate
  **/
-struct TerminateState: Channel
+template<int iChip, int iChannel>
+struct TerminateState: Channel<iChip,iChannel>
 {
+	using base = Channel<iChip,iChannel>;
+
   void react( CycleEvent const & ) override 
   {
-	spdlog::trace("Terminate {}", cntr);
-	cntr += 1;
+	spdlog::trace("Terminate {}", base::cntr);
+	base::cntr += 1;
 
-	if( cntr > 3 )
+	if( base::cntr > 3 )
 	{
-		transit<Idle>();
+		base::template transit<Idle<iChip,iChannel>>();
 		return;
 	}
 
 	if( this->terminate() )
-		transit<Idle>();
+		base::template transit<Idle<iChip,iChannel>>();
   };
 };
 
-bool Channel::terminate() 
+template<int iChip, int iChannel>
+bool Channel<iChip,iChannel>::terminate() 
 {
+	using base = Channel<iChip,iChannel>;
+
 	spdlog::info("terminate");
 
 	this->disable();
@@ -197,9 +235,12 @@ bool Channel::terminate()
 	return true;
 }
 
-void Channel::enable()
+template<int iChip, int iChannel>
+void Channel<iChip,iChannel>::enable()
 {
-	const std::string dExport = dChip + "export";
+	using base = Channel<iChip,iChannel>;
+
+	const std::string dExport = base::dChip + "export";
 	
 	spdlog::debug("{}::{}", dExport, iChannel);
 
@@ -207,7 +248,7 @@ void Channel::enable()
 	fsExport << iChannel << '\n';
 	fsExport.close();
 
-	const std::string dEnable = dChannel + "enable";
+	const std::string dEnable = base::dChannel + "enable";
 	
 	spdlog::debug("{}::1", dEnable);
 
@@ -216,9 +257,12 @@ void Channel::enable()
 	fsEnable.close();
 }
 
-void Channel::disable()
+template<int iChip, int iChannel>
+void Channel<iChip,iChannel>::disable()
 {
-	const std::string dEnable = dChannel + "enable";
+	using base = Channel<iChip,iChannel>;
+
+	const std::string dEnable = base::dChannel + "enable";
 
 	spdlog::debug("{}::0", dEnable);
 
@@ -226,7 +270,7 @@ void Channel::disable()
 	fsEnable << 0 << '\n';
 	fsEnable.close();
 
-	const std::string dUnexport = dChip + "unexport";
+	const std::string dUnexport = base::dChip + "unexport";
 	
 	spdlog::debug("{}::{}", dUnexport, iChannel);
 
@@ -235,9 +279,12 @@ void Channel::disable()
 	fsUnexport.close();
 }
 
-void Channel::setPeriod( const long period )
+template<int iChip, int iChannel>
+void Channel<iChip,iChannel>::setPeriod( const long period )
 {
-	const std::string dPeriod = dChannel + "period";
+	using base = Channel<iChip,iChannel>;
+
+	const std::string dPeriod = base::dChannel + "period";
 
 	spdlog::debug("{}::{}", dPeriod, period);
 
@@ -246,9 +293,12 @@ void Channel::setPeriod( const long period )
 	fsPeriod.close();
 }
 
-void Channel::setDutyCycle( const long dutycycle )
+template<int iChip, int iChannel>
+void Channel<iChip,iChannel>::setDutyCycle( const long dutycycle )
 {
-	const std::string dDutyCycle = dChannel + "duty_cycle";
+	using base = Channel<iChip,iChannel>;
+
+	const std::string dDutyCycle = base::dChannel + "duty_cycle";
 
 	spdlog::debug("{}::{}", dDutyCycle, dutycycle);
 
@@ -257,4 +307,6 @@ void Channel::setDutyCycle( const long dutycycle )
 	fsDutyCycle.close();
 }
 
-FSM_INITIAL_STATE( Channel, InitializeState )
+#define COMMA ,
+FSM_INITIAL_STATE( Channel<0 COMMA 14>, InitializeState<0 COMMA 14> )
+FSM_INITIAL_STATE( Channel<0 COMMA 15>, InitializeState<0 COMMA 15> )
