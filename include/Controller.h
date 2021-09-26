@@ -16,4 +16,7 @@ public:
 
 	/* Observer Pattern */
 	void update( int, int, const std::string&, const std::string& ) override;
+
+private:
+	bool active = false;
 };

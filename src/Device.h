@@ -11,12 +11,16 @@
 #include "Observer.h"
 #include "StateMachine.h"
 
+template<int,int>
+struct Idle;
+
 /* --------------------------------------------------------------------------*/
 template<typename... FF>
 struct DeviceList;
 
 template<> struct DeviceList<> {
 	static void attach( Observer* ) { }
+	static bool isIdle() { return true; }
 };
 
 template<typename F, typename... FF>
@@ -26,6 +30,18 @@ struct DeviceList<F, FF...>: tinyfsm::FsmList<F, FF...>
 	{
 		F::attach(observer);
 		DeviceList<FF...>::attach(observer);
+	}
+
+	static bool isIdle() 
+	{
+		auto statename = F::current_state_ptr->name;
+
+		if( statename.compare("idle") == 0 )
+			return DeviceList<FF...>::isIdle();
+		else
+			return false;
+		
+		return false;
 	}
 };
 
@@ -37,6 +53,7 @@ struct Device : tinyfsm::Fsm<Device<iChip,iChannel>>
 	public:
 		inline static bool halt = false;
 
+		/* Statemachine */
 		virtual void entry();
 		virtual void exit();
 
@@ -51,11 +68,12 @@ struct Device : tinyfsm::Fsm<Device<iChip,iChannel>>
 		/* Observer Pattern */
 		static void attach( Observer* );
 
+		const std::string name;
+
 	protected:
 		Device( const std::string _name ): name(_name){};
 
-		int cntr;
-		const std::string name;
+		int cntr;		
 
 		inline static long period = 2000000;
 		inline static long dutycycle = 1000000;
@@ -99,4 +117,3 @@ void Device<iChip,iChannel>::attach( Observer* observer )
 	spdlog::trace("Attach");
 	observers.push_back( observer );
 };
-

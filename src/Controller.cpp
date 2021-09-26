@@ -7,7 +7,7 @@
 #include "Device.h"
 
 using devices = DeviceList<
-	Device<0,14>,
+//	Device<0,14>,
 	Device<0,15>
 	>;
 
@@ -30,13 +30,14 @@ void Controller::run()
 	devices::attach( this );
 	devices::start();
 
+	active = true;
 	while( true )
 	{
 		spdlog::trace("cycle");
 
 		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
 		
-		if( Device<0,14>::is_in_state<Idle<0,14>>() ) break;
+		if( !active && devices::isIdle() ) break;
 
 		devices::dispatch( event );
 	}
@@ -45,6 +46,8 @@ void Controller::run()
 void Controller::halt()
 {
 	spdlog::info("halt");
+
+	active = false;
 
 	HaltEvent event;
 	devices::dispatch( event );
