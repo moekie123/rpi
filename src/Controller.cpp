@@ -6,19 +6,19 @@
 #include "Controller.h"
 #include "Device.h"
 
-using devices = tinyfsm::FsmList<
-//	Device<0,14>,
+using devices = DeviceList<
+	Device<0,14>,
 	Device<0,15>
 	>;
 
 Controller::Controller()
 {
-	spdlog::debug("construct");
+	spdlog::trace("construct");
 }
 
 Controller::~Controller()
 {
-	spdlog::debug("destruct");
+	spdlog::trace("destruct");
 }
 
 void Controller::run()
@@ -26,7 +26,8 @@ void Controller::run()
 	spdlog::info("run");
 
 	CycleEvent event;
-	
+
+	devices::attach( this );
 	devices::start();
 
 	while( true )
@@ -35,7 +36,7 @@ void Controller::run()
 
 		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
 		
-		if( Device<0,15>::is_in_state<Idle<0,15>>() ) break;
+		if( Device<0,14>::is_in_state<Idle<0,14>>() ) break;
 
 		devices::dispatch( event );
 	}
@@ -47,4 +48,9 @@ void Controller::halt()
 
 	HaltEvent event;
 	devices::dispatch( event );
+}
+
+void Controller::update( int chip, int channel, const std::string& topic, const std::string& message )
+{
+	spdlog::trace("update: {} {} {} {}", chip, channel, topic, message);
 }

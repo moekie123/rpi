@@ -8,7 +8,28 @@
 #include <spdlog/spdlog.h>
 #include <tinyfsm/tinyfsm.hpp>
 
+#include "Observer.h"
 #include "StateMachine.h"
+
+/* --------------------------------------------------------------------------*/
+template<typename... FF>
+struct DeviceList;
+
+template<> struct DeviceList<> {
+	static void attach( Observer* ) { }
+};
+
+template<typename F, typename... FF>
+struct DeviceList<F, FF...>: tinyfsm::FsmList<F, FF...>
+{
+	static void attach( Observer* observer ) 
+	{
+		F::attach(observer);
+		DeviceList<FF...>::attach(observer);
+	}
+};
+
+/* --------------------------------------------------------------------------*/
 
 template<int iChip, int iChannel>
 struct Device : tinyfsm::Fsm<Device<iChip,iChannel>>
@@ -27,8 +48,14 @@ struct Device : tinyfsm::Fsm<Device<iChip,iChannel>>
 		virtual bool terminate();
 		virtual bool control();
 
+		/* Observer Pattern */
+		static void attach( Observer* );
+
 	protected:
+		Device( const std::string _name ): name(_name){};
+
 		int cntr;
+		const std::string name;
 
 		inline static long period = 2000000;
 		inline static long dutycycle = 1000000;
@@ -45,12 +72,17 @@ struct Device : tinyfsm::Fsm<Device<iChip,iChannel>>
 
 		void setPeriod( long );
 		void setDutyCycle( long );
+
+		/* Observer Pattern */
+		inline static std::vector< Observer* > observers;
 };
 
 template<int iChip, int iChannel>
 struct Idle : Device<iChip,iChannel>
 {
 	using base = Device<iChip,iChannel>;
+
+	Idle(): Device<iChip,iChannel>("idle"){}
 
 	void react( CycleEvent const & ) override 
 	{
@@ -59,5 +91,12 @@ struct Idle : Device<iChip,iChannel>
 
 		if( base::halt ) return;
   	};
+};
+
+template<int iChip, int iChannel>
+void Device<iChip,iChannel>::attach( Observer* observer )
+{   	
+	spdlog::trace("Attach");
+	observers.push_back( observer );
 };
 

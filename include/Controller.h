@@ -1,6 +1,11 @@
 #pragma once
 
-class Controller 
+#include <cstring>
+
+#include "Observer.h"
+
+class Controller:
+	public Observer
 {
 public:
 	Controller();
@@ -8,4 +13,7 @@ public:
 
 	void run();
 	void halt();
+
+	/* Observer Pattern */
+	void update( int, int, const std::string&, const std::string& ) override;
 };

@@ -33,6 +33,10 @@ void Device<iChip,iChannel>::entry()
 	using base = Device<iChip,iChannel>;
 
 	spdlog::trace("Entry");
+
+	for( auto observer : observers)
+		observer->update( iChip, iChannel, "state", name );
+
 	base::cntr = 0;
 };
 
@@ -49,6 +53,8 @@ template<int iChip, int iChannel>
 struct InitializeState : Device<iChip,iChannel>
 {
 	using base = Device<iChip,iChannel>;
+
+	InitializeState(): Device<iChip,iChannel>("initialize"){}
 
 	void react( CycleEvent const & ) override 
 	{
@@ -128,6 +134,8 @@ struct ConfigureState: Device<iChip,iChannel>
 {
 	using base = Device<iChip,iChannel>;
 
+	ConfigureState(): Device<iChip,iChannel>("configure"){}
+
   void react( CycleEvent const & ) override 
   {
 	spdlog::trace("Configure {}", base::cntr);
@@ -165,6 +173,8 @@ template<int iChip, int iChannel>
 struct ControlState : Device<iChip,iChannel>
 {
 	using base = Device<iChip,iChannel>;
+
+	ControlState(): Device<iChip,iChannel>("control"){}
 
   	void react( CycleEvent const & ) override 
 	{
@@ -206,6 +216,8 @@ template<int iChip, int iChannel>
 struct TerminateState: Device<iChip,iChannel>
 {
 	using base = Device<iChip,iChannel>;
+
+	TerminateState(): Device<iChip,iChannel>("terminate"){}
 
   void react( CycleEvent const & ) override 
   {
