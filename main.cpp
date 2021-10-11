@@ -2,23 +2,25 @@
 #include <cstring>
 #include <signal.h>
 
-#include <spdlog/spdlog.h>
+#include <tinyfsm/tinyfsm.hpp>
 
+#include "Logger.h"
 #include "Controller.h"
 
 Controller* controller;
 
 void terminate( int signal )
 {
-	spdlog::info("Terminate");
+	INFO("terminate");
 	controller->halt();
 }
 
 int main( int argc, char *argv[] )
 {
 	spdlog::set_level( spdlog::level::trace );
-
-	spdlog::info("Booting Application");
+	spdlog::set_pattern("[%E] %v");
+	
+	INFO("booting application");
 
 	struct sigaction sigIntHandler;
 
@@ -32,68 +34,8 @@ int main( int argc, char *argv[] )
 	controller->run();
 	delete controller;
 
-/* ### Sandbox ### */
-/*
-	spdlog::info("init filesystem");
+	INFO("terminate application");
 
-	const std::string directory = "/sys/class/pwm/pwmchip0/";
-	const std::vector<std::string> files = { "", "npwm", "export", "unexport"};
-
-	for ( auto file : files) 
-	{
-		spdlog::debug("driver io {}", directory + file );
-		if( !std::filesystem::exists( directory + file ) )
-		{
-			spdlog::error("Failed to find {}", directory + file );
-			return -1;
-		}
-	}
-
-	spdlog::info("Open filesystem");
-	std::ifstream fsNpwm( directory + "npwm" );
-	std::ofstream fsExport( directory + "export" );
-	std::ofstream fsUnexport( directory + "unexport" );
-
-	spdlog::info("Operate filesystem");
-
-	int npwm;
-	fsNpwm >> npwm;
-	spdlog::info("npwm {}", npwm);
-
-	for( int n = 0; n < npwm; n++ )
-	{
-		spdlog::info( "export {}", n );
-		fsExport << n << '\n';
-	}
-
-
-	for( int n = 0; n < npwm; n++ )
-	{
-		spdlog::info( "unexport {}", n );
-		fsUnexport << n << '\n';
-	}
-
-	spdlog::info("Close filesystem");
-	if( fsNpwm.is_open() )
-	{
-		spdlog::debug("Close export");
-		fsNpwm.close();
-	}
-
-	if( fsExport.is_open() )
-	{
-		spdlog::debug("Close export");
-		fsExport.close();
-	}
-
-	if( fsUnexport.is_open() )
-	{
-		spdlog::debug("Close unexport");
-		fsUnexport.close();
-	}
-*/
-
-	spdlog::info("Terminate Application");
 	return 0;
 }
 

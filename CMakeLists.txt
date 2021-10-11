@@ -18,4 +18,5 @@ add_subdirectory(src)
 message("Build Project")
 add_executable(Controller main.cpp)
 
-target_link_libraries(Controller controller mosquitto stdc++fs)
+target_link_libraries(Controller controller mosquitto)
+
