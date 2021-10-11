@@ -11,21 +11,16 @@
  alias ls='ls $LS_OPTIONS'
  alias ll='ls $LS_OPTIONS -l'
  alias l='ls $LS_OPTIONS -lA'
-#
+
 # Some more alias to avoid making mistakes:
 # alias rm='rm -i'
 # alias cp='cp -i'
 # alias mv='mv -i'
 
-# Include shortcuts
- if [ -d "$HOME/project/" ] ; then
-	alias cdb='cd $HOME/project/build'
+PROJECT_DIR="$HOME/project/"
 
-	alias build='make -C $HOME/project/build/'
+ if [ -d $PROJECT_DIR ] ; then
+	source $PROJECT_DIR/docker/shortcuts
  fi
 
-# Include project bin directory 
- if [ -d "$HOME/project/bin" ] ; then
-     PATH="$HOME/project/bin:$PATH"
- fi
 

@@ -30,7 +30,7 @@ RUN git clone https://github.com/Tencent/rapidjson.git .\
 
 WORKDIR /opt/spdlog
 RUN git clone https://github.com/gabime/spdlog.git .	\
-		&& cmake -DSPDLOG_BUILD_EXAMPLE=OFF -DSPDLOG_BUILD_SHARED=ONi . \
+		&& cmake -DSPDLOG_BUILD_EXAMPLE=OFF -DSPDLOG_BUILD_SHARED=ON . \
 		&& make -j4 				\
 		&& make -j4 install
 
@@ -40,6 +40,13 @@ RUN git clone https://github.com/eclipse/mosquitto.git .\
 		&& make -j4 				\
 		&& make -j4 install
 
+WORKDIR /opt/tinyfsm
+RUN git clone https://github.com/digint/tinyfsm.git .
+
+WORKDIR /usr/local/include/tinyfsm
+RUN cp /opt/tinyfsm/include/* .
+
+WORKDIR /root
 COPY .bashrc /root/.bashrc
 CMD source /root/.bashrc
 

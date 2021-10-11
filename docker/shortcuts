@@ -1,0 +1,23 @@
+PROJECT_DIR="$HOME/project/"
+
+function setup {
+ 	if [ -d "$PROJECT_DIR/bin" ] ; then
+		source $PROJECT_DIR/docker/shortcuts
+	fi
+}
+
+# Include shortcuts
+ if [ -d $PROJECT_DIR ] ; then
+	alias cdp='cd $PROJECT_DIR'
+	alias cdb='cd $PROJECT_DIR/build'
+	alias cds='cd $PROJECT_DIR/src'
+	alias cdi='cd $PROJECT_DIR/include'
+	
+	alias build='make --no-print-directory -C $PROJECT_DIR/build/'
+ fi
+
+# Include project bin directory 
+ if [ -d "$PROJECT_DIR/bin" ] ; then
+     PATH="$PROJECT_DIR/bin:$PATH"
+ fi
+
