@@ -1,19 +1,36 @@
-#include <chrono>
 
 #include <tinyfsm/tinyfsm.hpp>
 
 #include "Logger.h"
 #include "Controller.h"
-#include "fsm/StateBase.h"
 
 struct eInitialize : tinyfsm::Event { };
+struct eInitialized : tinyfsm::Event { };
 
-class MosquittoState:
-	public tinyfsm::Fsm<MosquittoState>
+struct eTerminate : tinyfsm::Event { };
+struct eTerminated : tinyfsm::Event { };
+
+struct eError : tinyfsm::Event { };
+
+struct sIdle;
+struct sInitializing;
+struct sReady;
+struct sTerminating;
+
+class ControllerState:
+	public tinyfsm::Fsm<ControllerState>
 {
 
 public:
-	virtual void react(tinyfsm::Event const &)
+	virtual void react( eInitialize const & ){}
+	virtual void react( eInitialized const & ){}
+
+	virtual void react( eTerminate const & ){}
+	virtual void react( eTerminated const & ){}
+
+	virtual void react( eError const & ){}
+
+	virtual void react( tinyfsm::Event const & )
 	{
 		DEBUG("react");
 	};
@@ -29,15 +46,75 @@ public:
 	};
 };
 
-class sInit: 
-	public MosquittoState
+class sIdle: 
+	public ControllerState
 {
+	using base = ControllerState;
+
+	virtual void react( eInitialize const &) override
+	{
+		TRACE("initialze");
+
+		// Check all elements
+		base::transit< sInitializing >();
+	}
+};
+
+class sInitializing: 
+	public ControllerState
+{
+	using base = ControllerState;
+
+	virtual void entry(void) override
+	{
+		// Trigger all elements 
+	}
+
+	virtual void react( eInitialized const &) override
+	{
+		TRACE("initialized");
+		base::transit< sReady >();
+	}
+
+	virtual void react( eTerminate const &) override
+	{
+		TRACE("terminate");
+		base::transit< sTerminating >();
+	}
 
 };
 
-FSM_INITIAL_STATE( MosquittoState, sInit )
+class sReady:
+	public ControllerState
+{
+	using base = ControllerState;
 
-using fsm = MosquittoState;
+	void react( eTerminate const &) override
+	{
+		TRACE("terminate");
+		base::transit< sTerminating >();
+	}
+};
+
+class sTerminating: 
+	public ControllerState
+{
+	using base = ControllerState;
+
+	virtual void entry(void) override
+	{
+		// Trigger all elements 
+	}
+
+	virtual void react( eTerminated const &) override
+	{
+		TRACE("terminated");
+	}
+};
+
+FSM_INITIAL_STATE( ControllerState, sIdle )
+
+using fsm = ControllerState;
 
 Controller::Controller()
 {
@@ -55,19 +132,48 @@ void Controller::run()
 
 	fsm::start();
 
-	active = true;
-
-	while( active )
-	{
-		TRACE("cycle");
-
-		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
-	}
+	eInitialize event;
+	fsm::dispatch( event );
 }
 
 void Controller::halt()
 {
 	INFO("halt");
 
-	active = false;
+	eTerminate event;
+	fsm::dispatch( event );
+}
+
+/** Observer callbacks **/
+void Controller::initialized()
+{
+	bool done = false;
+
+	if( done )
+	{
+		eInitialized event;
+		fsm::dispatch( event );
+	}
+}
+
+void Controller::ready()
+{
+
+}
+
+void Controller::terminated()
+{
+	bool done = false;
+
+	if( done )
+	{
+		eTerminated event;
+		fsm::dispatch( event );
+	}
+}
+
+void Controller::error()
+{
+	eError event;
+	fsm::dispatch( event );
 }

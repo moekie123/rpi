@@ -1,9 +1,12 @@
 #pragma once
 
-#include <cstring>
-
 class Observer
 {
-	public:
-		virtual void update( const int, const int, const std::string&, const std::string& ) = 0;
+
+public:
+	virtual void initialized() = 0;
+	virtual void ready() = 0;
+	virtual void terminated() = 0;
+
+	virtual void error() = 0;
 };

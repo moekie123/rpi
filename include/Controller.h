@@ -1,6 +1,9 @@
 #pragma once
 
-class Controller
+#include "Observer.h"
+
+class Controller:
+	public Observer
 {
 public:
 	Controller();
@@ -9,6 +12,10 @@ public:
 	void run();
 	void halt();
 
-private:
-	bool active = false;
+	/* Observer pattern */
+	void initialized() override;
+	void ready() override;
+	void terminated() override;
+
+	void error() override;
 };

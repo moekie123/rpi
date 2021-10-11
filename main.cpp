@@ -1,6 +1,7 @@
 #include <cerrno>
 #include <cstring>
 #include <signal.h>
+#include <chrono>
 
 #include <tinyfsm/tinyfsm.hpp>
 
@@ -32,6 +33,13 @@ int main( int argc, char *argv[] )
 
 	controller = new Controller();
 	controller->run();
+
+	while( true )
+	{
+		TRACE("cycle");
+		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
+	}
+
 	delete controller;
 
 	INFO("terminate application");
