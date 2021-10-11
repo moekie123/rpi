@@ -10,10 +10,32 @@
 
 Controller* controller;
 
+enum SystemSignal
+{
+	start = 0,
+	stop = 1,
+	destroy = 2
+};
+
+SystemSignal sysSignal = start;
+
 void terminate( int signal )
 {
 	INFO("terminate");
-	controller->halt();
+
+	switch( sysSignal )
+	{
+		case SystemSignal::start:
+			sysSignal = SystemSignal::stop;
+			controller->halt();
+			break;
+		case SystemSignal::stop:
+			sysSignal = SystemSignal::destroy;
+			break;
+		case SystemSignal::destroy:
+		default:
+			break;
+	}
 }
 
 int main( int argc, char *argv[] )
@@ -38,6 +60,8 @@ int main( int argc, char *argv[] )
 	{
 		TRACE("cycle");
 		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
+
+		if( sysSignal  == SystemSignal::destroy ) break;
 	}
 
 	delete controller;
