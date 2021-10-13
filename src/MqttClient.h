@@ -14,6 +14,8 @@ public:
 
 	void attach( Observer* );
 
+	bool isRunning();
+
 private:
 	std::thread* pThread = nullptr;
 

@@ -126,6 +126,12 @@ void MqttClient::halt()
 	MqttClientState::dispatch(et);
 }
 
+bool MqttClient::isRunning()
+{
+	// Anything else but terminated implies the statemachine is running
+	return !MqttClientState::is_in_state<sTerminated>();
+}
+
 void MqttClient::attach( Observer* observer )
 {
 	MqttClientState::attach( observer );
@@ -138,8 +144,7 @@ void MqttClient::task()
 
 	while( true )
 	{
-		if( MqttClientState::is_in_state<sTerminated>() )
-			break;
+		if( MqttClientState::is_in_state<sTerminated>() ) break;
 
 		eCycle ec;
 		MqttClientState::dispatch(ec);

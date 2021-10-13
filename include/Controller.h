@@ -18,6 +18,4 @@ public:
 
 	/* Observer */
 	void halted() override;
-private:
-	bool active;
 };

@@ -24,9 +24,6 @@ Controller::~Controller()
 void Controller::run()
 {
 	logger::info("run");
-
-	active = true;
-
 	client->run();
 }
 
@@ -38,12 +35,11 @@ void Controller::halt()
 
 bool Controller::isRunning()
 {
-	return active;
+	return client->isRunning();
 }
 
 /* Observer Pattern */
 void Controller::halted()
 {
 	logger::info("halted");
-	active = false;
 }
