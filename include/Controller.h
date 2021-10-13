@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "Observer.h"
 
 class Controller:
@@ -12,5 +14,10 @@ public:
 	void run();
 	void halt();
 
-	/* Observer pattern */
+	bool isRunning();
+
+	/* Observer */
+	void halted() override;
+private:
+	bool active;
 };

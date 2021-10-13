@@ -1,4 +1,3 @@
-
 #include <tinyfsm/tinyfsm.hpp>
 
 #include "Logger.h"
@@ -6,24 +5,45 @@
 #include "Controller.h"
 #include "MqttClient.h"
 
+MqttClient* client;
+
 Controller::Controller()
 {
-	TRACE("construct");
-	MqttClient::attach( this );
+	logger::trace("construct");
+
+	client = new MqttClient();
+	client->attach( this );
 }
 
 Controller::~Controller()
 {
-	TRACE("destroy");
+	logger::trace("destroy");
+	delete client;
 }
 
 void Controller::run()
 {
-	INFO("run");
+	logger::info("run");
+
+	active = true;
+
+	client->run();
 }
 
 void Controller::halt()
 {
-	INFO("halt");
+	logger::info("halt");
+	client->halt();
 }
 
+bool Controller::isRunning()
+{
+	return active;
+}
+
+/* Observer Pattern */
+void Controller::halted()
+{
+	logger::info("halted");
+	active = false;
+}

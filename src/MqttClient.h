@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <Observer.h>
+#include "Observer.h"
 
 class MqttClient
 {
@@ -9,8 +9,14 @@ public:
 	MqttClient();
 	~MqttClient();
 
-	static void initialize();
-	static void terminate();
+	void run();
+	void halt();
 
-	static void attach( Observer* );
+	void attach( Observer* );
+
+private:
+	std::thread* pThread = nullptr;
+
+	inline static bool active = false;
+	static void task();
 };
