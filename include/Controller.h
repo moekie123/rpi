@@ -13,9 +13,4 @@ public:
 	void halt();
 
 	/* Observer pattern */
-	void initialized() override;
-	void ready() override;
-	void terminated() override;
-
-	void error() override;
 };
