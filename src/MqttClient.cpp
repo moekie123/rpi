@@ -3,6 +3,7 @@
 #include <thread>
 #include <chrono>
 #include <errno.h>
+#include <stdexcept>
 
 #include <tinyfsm/tinyfsm.hpp>
 #include <mosquitto.h>
@@ -38,6 +39,29 @@ struct eResponseCode : tinyfsm::Event
 	const int code;
 };
 
+struct ePublish : tinyfsm::Event 
+{ 
+	ePublish( const int _mid, const std::string _topic, const std::string _message, int _qos, bool _retained ):
+		topic(_topic), payload(_message), qos(_qos), retained(_retained)
+	{
+		mid = new int( _mid );
+
+		int res = mosquitto_pub_topic_check( _topic.c_str() );
+		if( res != MOSQ_ERR_SUCCESS )
+		{
+			std::string msg( mosquitto_strerror( res ));
+			logger::error( msg );
+			throw std::invalid_argument( msg );
+		}
+	}
+
+	int *mid;
+	const std::string topic;
+	const std::string payload;
+	const int qos;
+	const bool retained;
+};
+
 class MqttClientState:
 	public tinyfsm::Fsm<MqttClientState>
 {
@@ -51,6 +75,7 @@ public:
 	virtual void react( eStartup const & ){};
 	virtual void react( eTerminate const & ){};
 	virtual void react( eResponseCode const & ){};
+	virtual void react( ePublish const & ){};
 
 	virtual void entry( void ){};
   	virtual void exit( void ){};
@@ -406,12 +431,12 @@ bmosq_EXPORT int mosquitto_subscribe( struct mosquitto * mosq, int * mid, const 
 
 void on_publish( struct mosquitto* client, void* obj, int mid )
 {
-	logger::info("publish: message id:{}", mid);
+	logger::info("published id:{}", mid);
 }
 
 void on_subscribe( struct mosquitto* client, void* obj, int mid, int qos_count, const int *qos_grand )
 {
-	logger::info("subscribe: message id:{}", mid);
+	logger::info("subscribed id:{}", mid);
 }
 
 class sIdle:
@@ -421,6 +446,15 @@ public:
 	sIdle():MqttClientStateBase("idle"){
 		retryEnabled = false;
 	}
+
+	void react( ePublish const &message ) override
+	{
+		int res = mosquitto_publish(client, message.mid, message.topic.c_str(), message.payload.size(), message.payload.c_str(), message.qos, message.retained );
+		if( res != MOSQ_ERR_SUCCESS )
+		{
+			logger::error(mosquitto_strerror( res ));
+		}
+	};
 
 	inline void terminate() override
 	{
@@ -593,6 +627,14 @@ void MqttClient::run()
 
 	eStartup es;
 	MqttClientState::dispatch(es);
+}
+
+void MqttClient::publish()
+{
+	logger::debug("publish");
+	
+	ePublish ep(1, "controller/config", "{'version':1}", 0, false);
+	MqttClientState::dispatch(ep);
 }
 
 void MqttClient::halt()

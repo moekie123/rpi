@@ -42,6 +42,12 @@ bool Controller::isRunning()
 void Controller::update( const std::string &name )
 {
 	logger::info("update: " + name );
+
+	if( name.compare("idle") == 0 )
+	{
+		logger::info("Publish");
+		client->publish();
+	}
 }
 
 void Controller::halted()

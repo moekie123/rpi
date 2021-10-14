@@ -14,6 +14,8 @@ public:
 
 	void attach( Observer* );
 
+	void publish();
+
 	bool isRunning();
 
 private:
