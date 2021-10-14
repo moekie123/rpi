@@ -1,3 +1,9 @@
+###### Generated from <project>/script/aliases ######
+
+if [[ ! -v PROJECT_DIR ]];
+then
+	PROJECT_DIR=$SETUP_DIR
+fi
 
 # Navigation shorcuts
 alias cdp='cd $PROJECT_DIR/'
@@ -7,8 +13,8 @@ alias cdi='cd $PROJECT_DIR/include'
 alias cdc='cd $PROJECT_DIR/config'
 
 # Docker shortcuts
-alias dcu='docker-compose -f $PROJECT_DIR up -d'
-alias dcd='docker-compose -f $PROJECT_DIR stop'
+alias dcu='docker-compose -f $PROJECT_DIR/docker-compose.yml up -d'
+alias dcd='docker-compose -f $PROJECT_DIR/docker-compose.yml stop'
 alias dca='docker attach environment'
 alias dcb='docker build . -t environment:latest'
 
