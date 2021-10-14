@@ -17,5 +17,6 @@ public:
 	bool isRunning();
 
 	/* Observer */
+	void update( const std::string & ) override;
 	void halted() override;
 };

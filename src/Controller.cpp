@@ -39,6 +39,11 @@ bool Controller::isRunning()
 }
 
 /* Observer Pattern */
+void Controller::update( const std::string &name )
+{
+	logger::info("update: " + name );
+}
+
 void Controller::halted()
 {
 	logger::info("halted");
