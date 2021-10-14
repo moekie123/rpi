@@ -10,16 +10,7 @@
 #include "Logger.h"
 #include "MqttClient.h"
 
-struct eCycle : tinyfsm::Event { };
-struct eStartup : tinyfsm::Event { };
-struct eTerminate : tinyfsm::Event { };
-
-struct eResponseCode : tinyfsm::Event 
-{ 
-	eResponseCode( int rc ): code( rc ){}
-	const int code;
-};
-
+/* Mqtt States */
 struct sUninitialized;
 struct sInitializing;
 struct sConfiguring;
@@ -30,8 +21,20 @@ struct sDestroying;
 struct sTerminated;
 struct sError;
 
+/* Mosquitto callbacks */
 void on_connect ( struct mosquitto*, void*, int );
 void on_disconnect ( struct mosquitto*, void*, int );
+void on_log( struct mosquitto* client, void* obj, int level, const char* msg );
+
+/* Mqtt Events */
+struct eCycle : tinyfsm::Event { };
+struct eStartup : tinyfsm::Event { };
+struct eTerminate : tinyfsm::Event { };
+struct eResponseCode : tinyfsm::Event 
+{ 
+	eResponseCode( int rc ): code( rc ){}
+	const int code;
+};
 
 class MqttClientState:
 	public tinyfsm::Fsm<MqttClientState>
@@ -164,6 +167,11 @@ private:
 * State: Initializing
 * 	In this state only-once setting are set
 */
+void on_log( struct mosquitto* client, void* obj, int level, const char* msg )
+{
+	logger::trace("mosquito lib: {}", msg);
+}
+
 class sInitializing:
 	public MqttClientStateBase
 {
@@ -185,10 +193,12 @@ public:
 		}
 
 		// Initial Creating
+		const std::string identifier = "controller";
+
 		bool created = false;
 		if( !client )
 		{
-			client = mosquitto_new( NULL, true, NULL );
+			client = mosquitto_new( identifier.c_str(), true, NULL );
 
 			if( client )
 				created = true;
@@ -198,7 +208,7 @@ public:
 		// Recreation
 		else
 		{
-			int res = mosquitto_reinitialise( client, NULL, true, NULL );
+			int res = mosquitto_reinitialise( client, identifier.c_str(), true, NULL );
 
 			if( res == MOSQ_ERR_SUCCESS )
 				created = true;
@@ -213,6 +223,7 @@ public:
 		}
 
 		// Adding callbacks
+		mosquitto_log_callback_set( client, on_log );
 		mosquitto_connect_callback_set( client, on_connect );
 		mosquitto_disconnect_callback_set( client, on_disconnect );
 
