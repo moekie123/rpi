@@ -19,7 +19,7 @@ alias dca='docker attach environment'
 alias dcb='docker build . -t environment:latest'
 
 # Build shortcuts
-alias build='make -C $PROJECT_DIR/build/'
+alias build='make -C $PROJECT_DIR/build/ --no-print-directory'
 
 # Include binaries
 export PATH=$PROJECT_DIR/bin:$PATH
