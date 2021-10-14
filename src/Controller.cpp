@@ -17,7 +17,7 @@ Controller::Controller()
 
 Controller::~Controller()
 {
-	logger::trace("destroy");
+	logger::trace("destruct");
 	delete client;
 }
 
