@@ -24,7 +24,9 @@ struct sError;
 /* Mosquitto callbacks */
 void on_connect ( struct mosquitto*, void*, int );
 void on_disconnect ( struct mosquitto*, void*, int );
-void on_log( struct mosquitto* client, void* obj, int level, const char* msg );
+void on_log( struct mosquitto*, void*, int, const char* );
+void on_publish( struct mosquitto*, void*, int );
+void on_subscribe( struct mosquitto*, void*, int, int, const int * );
 
 /* Mqtt Events */
 struct eCycle : tinyfsm::Event { };
@@ -245,7 +247,9 @@ public:
 		mosquitto_connect_callback_set( client, on_connect );
 		mosquitto_disconnect_callback_set( client, on_disconnect );
 		mosquitto_message_callback_set( client, on_message );
-
+		mosquitto_publish_callback_set( client, on_publish );
+		mosquitto_subscribe_callback_set( client, on_subscribe );
+	
 		// Allow Async behaviour
 		//	mosquitto_threaded_set(client, true);
 		
@@ -394,6 +398,22 @@ private:
 /**
 * State: Idle
 */
+
+/*
+int mosquitto_publish(struct mosquitto * mosq, int *mid, const char * topic, int payloadlen, const void * payload, int qos, bool retain	)
+bmosq_EXPORT int mosquitto_subscribe( struct mosquitto * mosq, int * mid, const char * sub, int qos )
+*/
+
+void on_publish( struct mosquitto* client, void* obj, int mid )
+{
+	logger::info("publish: message id:{}", mid);
+}
+
+void on_subscribe( struct mosquitto* client, void* obj, int mid, int qos_count, const int *qos_grand )
+{
+	logger::info("subscribe: message id:{}", mid);
+}
+
 class sIdle:
 	public MqttClientStateBase
 {
@@ -605,7 +625,7 @@ void MqttClient::task()
 
 		if(  !MqttClientState::isRunning() ) break;
 
-		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
+		std::this_thread::sleep_for( std::chrono::milliseconds( 500 ));
 	}
 
 	logger::trace("stop task");
