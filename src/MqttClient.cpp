@@ -14,9 +14,14 @@ struct eCycle : tinyfsm::Event { };
 struct eStartup : tinyfsm::Event { };
 struct eTerminate : tinyfsm::Event { };
 
+struct eResponseCode : tinyfsm::Event 
+{ 
+	eResponseCode( int rc ): code( rc ){}
+	const int code;
+};
+
 struct sUninitialized;
 struct sInitializing;
-struct sCreating;
 struct sConfiguring;
 struct sConnecting;
 struct sIdle;
@@ -24,6 +29,8 @@ struct sDisconnecting;
 struct sDestroying;
 struct sTerminated;
 struct sError;
+
+void on_connect ( struct mosquitto*, void*, int );
 
 class MqttClientState:
 	public tinyfsm::Fsm<MqttClientState>
@@ -37,6 +44,7 @@ public:
 	virtual void react( eCycle const & ){};
 	virtual void react( eStartup const & ){};
 	virtual void react( eTerminate const & ){};
+	virtual void react( eResponseCode const & ){};
 
 	virtual void entry( void ){};
   	virtual void exit( void ){};
@@ -86,17 +94,19 @@ public:
 		{
 			logger::trace( name + ": cycle [{}/{}]", retryCntr, retryMax );
 			retryCntr++;
+		
+			bool success = process();
+			
+			if( success ) return;
+			if( (retryCntr > retryMax) ) return;
+		
+			MqttClientState::transit<sError>();
 		}
 		else
+		{
 			logger::trace( name + ": cycle" );
-
-
-		bool success = process();
-		
-		if( success ) return;
-
-		if( retryEnabled && ( retryCntr > retryMax) )
-			MqttClientState::transit<sError>();
+			process();
+		}
 	}
 
 	void react( eTerminate const & ) override
@@ -112,6 +122,7 @@ protected:
 
 	bool retryEnabled = true;
 	int retryMax = 3;
+
 
 private:
 	int retryCntr;
@@ -149,48 +160,31 @@ private:
 };
 
 /**
-* State: Initializing
+* State: Creating
+* 	In this state only-once setting are set
 */
 class sInitializing:
 	public MqttClientStateBase
 {
 public:
-	sInitializing():MqttClientStateBase("initializing"){}
+	sInitializing():MqttClientStateBase("initializing")
+	{
+		retryEnabled = false;
+	}
 
 	inline bool process() override
 	{
+		// Initialize Mosquitto Library
 		int res =  mosquitto_lib_init();
-
 		if( res != MOSQ_ERR_SUCCESS )
 		{
 			logger::error( mosquitto_strerror( res ));
+			MqttClientState::transit<sError>();
 			return false;
 		}
-	
-		MqttClientState::transit<sCreating>();
-		return true;
-	}
-
-	inline void terminate() override
-	{
-		MqttClientState::transit<sDestroying>();
-	};
-};
-
-/**
-* State: Creating
-*/
-class sCreating:
-	public MqttClientStateBase
-{
-public:
-	sCreating():MqttClientStateBase("creating"){}
-
-	inline bool process() override
-	{
-		bool created = false;
 
 		// Initial Creating
+		bool created = false;
 		if( !client )
 		{
 			client = mosquitto_new( NULL, true, NULL );
@@ -212,7 +206,22 @@ public:
 		}
 
 		if( !created )
+		{
+			MqttClientState::transit<sError>();
 			return false;
+		}
+
+		// Adding callbacks
+		mosquitto_connect_callback_set( client, on_connect );
+
+		// Start Observering Socket data
+		res = mosquitto_loop_start( client );
+		if( res != MOSQ_ERR_SUCCESS )
+		{
+			logger::error(mosquitto_strerror( res ));
+			MqttClientState::transit<sError>();
+			return false;
+		}
 
 		MqttClientState::transit<sConfiguring>();
 		return true;
@@ -226,6 +235,7 @@ public:
 
 /**
 * State: Configuring
+* 	In this state it is allowed to (re) configure on-the-fly
 */
 class sConfiguring:
 	public MqttClientStateBase
@@ -259,32 +269,74 @@ public:
 /**
 * State: Connecting
 */
+void on_connect ( struct mosquitto* client , void* obj, int rc )
+{
+	eResponseCode et( rc );
+	MqttClientState::dispatch(et);
+}
+
 class sConnecting:
 	public MqttClientStateBase
 {
 public:
-	sConnecting():MqttClientStateBase("connecting"){}
-
-	inline bool process() override
+	sConnecting():MqttClientStateBase("connecting")
 	{
-		std::string host = "mosquitto";
-		int port = 1883;
-		int res = mosquitto_connect( client, host.c_str(), port, 5 );
+		retryEnabled = false;
+	}
 
-		if( res != MOSQ_ERR_SUCCESS )
+	inline void entering() override
+	{
+		connect();
+	};
+
+	void react( eResponseCode const& response )
+	{
+		int rc = response.code;
+
+		if( rc == 0 )
 		{
-			logger::error(mosquitto_strerror( res ));
-			return false;
+			logger::info("connection accepted");
+			MqttClientState::transit<sIdle>();
+			return;
 		}
+		else if( rc == 1 )
+			logger::error("connection failure: incorrect protocol");
+		else if( rc == 2 )
+			logger::error("connection failure: identifier rejected");
+		else if( rc == 3 )
+			logger::error("connection failure: server unvailable");
+		else if( rc == 4 )
+			logger::error("connection failure: incorrect credentials");
+		else if( rc == 5 )
+			logger::error("connection failure: not authorized");
 
-		MqttClientState::transit<sIdle>();
-		return true;
+		connect();
 	}
 
 	inline void terminate() override
 	{
 		MqttClientState::transit<sDestroying>();
 	};
+
+private:
+	const std::string host = "mosquitto";
+	const int port = 1883;
+	const int keep_alive = 5;
+
+	void connect()
+	{
+		logger::info("connect to broker: {}:{}", host, port);
+
+		/**
+		 * Callback 'on_connect' has been preconfigured during initialization
+		 */
+		int res = mosquitto_connect( client, host.c_str(), port, keep_alive );
+		if( res != MOSQ_ERR_SUCCESS )
+		{
+			logger::error(mosquitto_strerror( res ));
+			MqttClientState::transit<sError>();
+		}
+	}
 };
 
 /**
