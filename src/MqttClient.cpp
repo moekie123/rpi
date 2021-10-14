@@ -19,6 +19,8 @@ struct sInitializing;
 struct sCreating;
 struct sConfiguring;
 struct sConnecting;
+struct sIdle;
+struct sDisconnecting;
 struct sDestroying;
 struct sTerminated;
 struct sError;
@@ -287,7 +289,81 @@ public:
 		}
 
 		if( res == MOSQ_ERR_SUCCESS )
-			logger::info("connecting succes");
+			MqttClientState::transit<sIdle>();
+
+		else if( cntr > maxRetry )
+			MqttClientState::transit<sError>();
+	}
+
+	void react( eTerminate const & ) override
+	{
+		logger::trace( name + ": eTerminate");
+		MqttClientState::transit<sTerminated>();
+	};
+
+private:
+	const int maxRetry = 3;
+	int cntr;
+};
+
+/**
+* State: Idle
+*/
+class sIdle:
+	public MqttClientState
+{
+	using base = MqttClientState;
+
+public:
+	sIdle():MqttClientState("idle"){}
+
+	void entry( void ) override
+	{
+		for( auto observer: observers )
+			observer->update(name);
+	}
+
+	void react( eTerminate const & ) override
+	{
+		logger::trace( name + ": eTerminate");
+		MqttClientState::transit<sDisconnecting>();
+	};
+};
+
+/**
+* State: Disconnecting
+*/
+class sDisconnecting:
+	public MqttClientState
+{
+	using base = MqttClientState;
+
+public:
+	sDisconnecting():MqttClientState("disconnecting"){}
+
+	void entry( void ) override
+	{
+		cntr = 0;
+		for( auto observer: observers )
+			observer->update(name);
+	}
+
+	void react( eCycle const & ) override
+	{
+		int res;
+
+		logger::trace( name + ": [{}/{}]", cntr, maxRetry );
+		cntr++;
+
+		res = mosquitto_disconnect( client );
+
+		if( res != MOSQ_ERR_SUCCESS )
+		{
+			logger::error(mosquitto_strerror( res ));
+		}
+
+		if( res == MOSQ_ERR_SUCCESS )
+			MqttClientState::transit<sDestroying>();
 
 		else if( cntr > maxRetry )
 			MqttClientState::transit<sError>();
@@ -303,7 +379,6 @@ private:
 	const int maxRetry = 3;
 	int cntr;
 };
-
 
 /**
 * State: Destroying
