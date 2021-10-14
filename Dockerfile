@@ -60,5 +60,5 @@ RUN echo '/usr/local/lib/' >> aarch64-linux-gnu.conf	\
 
 # Configure bash script at startup
 WORKDIR /root
-COPY .bashrc /root/.bashrc
+COPY script/.bashrc /root/.bashrc
 CMD source /root/.bashrc

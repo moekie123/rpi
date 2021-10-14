@@ -277,7 +277,7 @@ public:
 		logger::trace( name + ": [{}/{}]", cntr, maxRetry );
 		cntr++;
 
-		std::string host = "127.0.0.1";
+		std::string host = "mosquitto";
 		int port = 1883;
 		res = mosquitto_connect( client, host.c_str(), port, 5 );
 

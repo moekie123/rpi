@@ -17,10 +17,8 @@
 # alias cp='cp -i'
 # alias mv='mv -i'
 
+# Added shortcuts
 PROJECT_DIR="$HOME/project/"
-
- if [ -d $PROJECT_DIR ] ; then
-	source $PROJECT_DIR/docker/shortcuts
- fi
-
-
+if [ -d $PROJECT_DIR ] ; then
+	source $PROJECT_DIR/.generated/.bash_aliases
+fi
