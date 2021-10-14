@@ -134,6 +134,24 @@ private:
 
 
 /**
+	struct mosquitto_message{
+		int mid;
+		char *topic;
+		void *payload;
+		int payloadlen;
+		int qos;
+		bool retain;
+	};
+*/ 
+void on_message(struct mosquitto* client, void * obj, const struct mosquitto_message* message )
+{
+	std::string topic( message->topic );
+	std::string payload( (char*)message->payload, message->payloadlen );
+
+	logger::info("received message: topic:{} payload:{}", topic, payload);
+}
+
+/**
 * State: Uninitialized
 */
 class sUninitialized:
@@ -226,6 +244,7 @@ public:
 		mosquitto_log_callback_set( client, on_log );
 		mosquitto_connect_callback_set( client, on_connect );
 		mosquitto_disconnect_callback_set( client, on_disconnect );
+		mosquitto_message_callback_set( client, on_message );
 
 		// Allow Async behaviour
 		//	mosquitto_threaded_set(client, true);
@@ -265,7 +284,22 @@ public:
 		const std::string username = "admin";
 		const std::string password = "password";
 
+		logger::info("configure: username:{} password:{}", username, password);
 		int res = mosquitto_username_pw_set( client, username.c_str(), password.c_str() );
+		if( res != MOSQ_ERR_SUCCESS )
+		{
+			logger::error(mosquitto_strerror( res ));
+			return false;
+		}
+
+		// Configure last will
+		const std::string topic = "controller";
+		const std::string msg = "";
+		const int qos = 0;
+		const bool retain = false;
+
+		logger::info("configure: topic:{} message:{}", topic.c_str(), msg.c_str());
+		res = mosquitto_will_set( client, topic.c_str(), msg.size(), msg.c_str(), qos, retain );
 		if( res != MOSQ_ERR_SUCCESS )
 		{
 			logger::error(mosquitto_strerror( res ));
