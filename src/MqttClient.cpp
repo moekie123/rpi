@@ -31,6 +31,7 @@ struct sTerminated;
 struct sError;
 
 void on_connect ( struct mosquitto*, void*, int );
+void on_disconnect ( struct mosquitto*, void*, int );
 
 class MqttClientState:
 	public tinyfsm::Fsm<MqttClientState>
@@ -160,7 +161,7 @@ private:
 };
 
 /**
-* State: Creating
+* State: Initializing
 * 	In this state only-once setting are set
 */
 class sInitializing:
@@ -213,7 +214,11 @@ public:
 
 		// Adding callbacks
 		mosquitto_connect_callback_set( client, on_connect );
+		mosquitto_disconnect_callback_set( client, on_disconnect );
 
+		// Allow Async behaviour
+		//	mosquitto_threaded_set(client, true);
+		
 		// Start Observering Socket data
 		res = mosquitto_loop_start( client );
 		if( res != MOSQ_ERR_SUCCESS )
@@ -271,6 +276,8 @@ public:
 */
 void on_connect ( struct mosquitto* client , void* obj, int rc )
 {
+	logger::trace("received connect response {}", rc);
+
 	eResponseCode et( rc );
 	MqttClientState::dispatch(et);
 }
@@ -328,9 +335,9 @@ private:
 		logger::info("connect to broker: {}:{}", host, port);
 
 		/**
-		 * Callback 'on_connect' has been preconfigured during initialization
+		  * callback 'on_connect' has been attached to mosquitto library
 		 */
-		int res = mosquitto_connect( client, host.c_str(), port, keep_alive );
+		int res = mosquitto_connect_async( client, host.c_str(), port, keep_alive );
 		if( res != MOSQ_ERR_SUCCESS )
 		{
 			logger::error(mosquitto_strerror( res ));
@@ -359,30 +366,60 @@ public:
 /**
 * State: Disconnecting
 */
+void on_disconnect ( struct mosquitto* client , void* obj, int rc )
+{
+	logger::trace("received disconnect response {}", rc);
+	eResponseCode et( rc );
+	MqttClientState::dispatch(et);
+}
+
 class sDisconnecting:
 	public MqttClientStateBase
 {
 public:
-	sDisconnecting():MqttClientStateBase("disconnecting"){}
-
-	inline bool process() override
+	sDisconnecting():MqttClientStateBase("disconnecting")
 	{
-		int res = mosquitto_disconnect( client );
+		retryEnabled = false;
+	}
 
-		if( res != MOSQ_ERR_SUCCESS )
+	inline void entering() override
+	{
+		disconnect();
+	};
+
+	void react( eResponseCode const& response )
+	{
+		int rc = response.code;
+
+		if( rc == 0 )
+			MqttClientState::transit<sDestroying>();
+		else
 		{
-			logger::error(mosquitto_strerror( res ));
-			return false;
+			logger::error("disconnect: invalid response {}", rc );
+			disconnect();
 		}
-
-		MqttClientState::transit<sDestroying>();
-		return true;
 	}
 
 	inline void terminate() override
 	{
 		MqttClientState::transit<sDestroying>();
 	};
+
+private:
+	void disconnect()
+	{
+		logger::info("disconnect from broker");
+
+		/**
+		 * callback 'on_disconnect' has been attached to mosquitto library
+		 */
+		int res = mosquitto_disconnect( client );
+		if( res != MOSQ_ERR_SUCCESS )
+		{
+			logger::error(mosquitto_strerror( res ));
+			MqttClientState::transit<sError>();
+		}
+	}
 };
 
 /**
