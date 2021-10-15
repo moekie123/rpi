@@ -11,9 +11,9 @@
 #include "Logger.h"
 #include "MqttClient.h"
 
-struct package
+struct MqttPackage
 {
-	const int identifier;
+	const int id;
 	const std::string topic;
 	const std::string payload;
 	const int qos;
@@ -44,12 +44,9 @@ struct eRetry : tinyfsm::Event { };
 
 struct ePublish : tinyfsm::Event 
 { 
-	ePublish( const int _mid, const std::string _topic, const std::string _message, int _qos, bool _retained ):
-		topic(_topic), payload(_message), qos(_qos), retained(_retained)
+	ePublish( const MqttPackage& _package ): package( _package )
 	{
-		mid = new int( _mid );
-
-		int res = mosquitto_pub_topic_check( _topic.c_str() );
+		int res = mosquitto_pub_topic_check( package.topic.c_str() );
 		if( res != MOSQ_ERR_SUCCESS )
 		{
 			std::string msg( mosquitto_strerror( res ));
@@ -57,12 +54,7 @@ struct ePublish : tinyfsm::Event
 			throw std::invalid_argument( msg );
 		}
 	}
-
-	int *mid;
-	const std::string topic;
-	const std::string payload;
-	const int qos;
-	const bool retained;
+	const MqttPackage package;
 };
 
 /* MqttClient Base State */
@@ -72,16 +64,16 @@ class MqttClientState:
 
 public:
 	
-	MqttClientState( const std::string _name): name( _name ){}
+	MqttClientState( const std::string _name ): name( _name ){}
 
 	/* Event bases */
-	virtual void react( tinyfsm::Event const & ){};
-	virtual void react( eStartup const & ){};
-	virtual void react( eConnected const & ){};
-	virtual void react( eDisconnected const & ){};
-	virtual void react( ePublish const & ){};
+	virtual void react( const tinyfsm::Event & ){};
+	virtual void react( const eStartup & ){};
+	virtual void react( const eConnected & ){};
+	virtual void react( const eDisconnected & ){};
+	virtual void react( const ePublish & ){};
 	
-	virtual void react( eRetry const & )
+	virtual void react( const eRetry & )
 	{
 		logger::trace( name + ": retry [{}/{}]", retryCntr, retryMax );
 		
@@ -93,13 +85,12 @@ public:
 		retryCntr++;
 	}
 
-	virtual void react( eTerminate const & )
+	virtual void react( const eTerminate & )
 	{
 		logger::trace( name + ": eTerminate");
 		terminate();
 	};
 
-	/* State transitions */
 	virtual void entry( void ) 
 	{
 		logger::trace( name + ": entry");
@@ -136,10 +127,7 @@ protected:
 	inline static const std::string username = "admin";
 	inline static const std::string password = "password";
 	
-	inline static const std::string lastWillTopic = "controller";
-	inline static const std::string lastWillPayload = "";
-	inline static const int lastWillQos = 0;
-	inline static const bool lastWillRetained = false;
+	inline static const MqttPackage lastWill = { 0, "controller", "", 0, false };
 
 	inline static const std::string host = "mosquitto";
 	inline static const int port = 1883;
@@ -152,12 +140,10 @@ protected:
 	virtual inline void retry(){};
 	virtual inline void terminate(){};
 
-	int retryMax = 3;
-
 	inline static std::vector< Observer* > observers;
 
-
 private:
+	int retryMax = 3;
 	int retryCntr;
 };
 
@@ -246,7 +232,7 @@ private:
 		active = true;
 	}
 
-	void react( eStartup const & )
+	void react( const eStartup & )
 	{
 		int res;
 		
@@ -292,8 +278,8 @@ private:
 		}
 
 		// Configure last will
-		logger::info("configure: topic:{} message:{}", lastWillTopic.c_str(), lastWillPayload.c_str());
-		res = mosquitto_will_set( client, lastWillTopic.c_str(), lastWillPayload.size(), lastWillPayload.c_str(), lastWillQos, lastWillRetained );
+		logger::info("configure: topic:{} message:{}", lastWill.topic.c_str(), lastWill.payload.c_str());
+		res = mosquitto_will_set( client, lastWill.topic.c_str(), lastWill.payload.size(), lastWill.payload.c_str(), lastWill.qos, lastWill.retained );
 		if( res != MOSQ_ERR_SUCCESS )
 		{
 			logger::error(mosquitto_strerror( res ));
@@ -341,7 +327,7 @@ public:
 		connect();
 	};
 
-	void react( eConnected const & ) override
+	void react( const eConnected & ) override
 	{
 		int sock = mosquitto_socket(client);
 		logger::info("client socket {}", sock );
@@ -385,16 +371,18 @@ class sIdle:
 public:
 	sIdle():MqttClientState("idle"){}
 
-	void react( ePublish const &message ) override
+	void react( const ePublish &message ) override
 	{
-		int res = mosquitto_publish(client, message.mid, message.topic.c_str(), message.payload.size(), message.payload.c_str(), message.qos, message.retained );
+		const MqttPackage& package = message.package;
+
+		int id = package.id;
+		int res = mosquitto_publish( client, &id, package.topic.c_str(), package.payload.size(), package.payload.c_str(), package.qos, package.retained );
 		if( res != MOSQ_ERR_SUCCESS )
 		{
 			logger::error(mosquitto_strerror( res ));
 		}
 
 		MqttClientState::transit<sDisconnecting>();
-
 	};
 
 	inline void terminate() override
@@ -417,7 +405,7 @@ public:
 		disconnect();
 	};
 
-	void react( eDisconnected const& ) override
+	void react( const eDisconnected& ) override
 	{
 		int sock = mosquitto_socket(client);
 		logger::info("client socket {}", sock );
@@ -519,7 +507,6 @@ private:
 	};
 };
 
-
 FSM_INITIAL_STATE( MqttClientState, sUninitialized )
 
 MqttClient::MqttClient()
@@ -549,8 +536,10 @@ void MqttClient::run()
 void MqttClient::publish()
 {
 	logger::debug("publish");
-	
-	ePublish ep(1, "controller/config", "{'version':1}", 0, false);
+
+	MqttPackage package = { 1, "controller/config", "{'version':1}", 0, false };
+	ePublish ep( package );
+
 	MqttClientState::dispatch(ep);
 }
 
