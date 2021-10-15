@@ -19,8 +19,5 @@ public:
 	bool isRunning();
 
 private:
-	std::thread* pThread = nullptr;
-
 	inline static bool active = false;
-	static void task();
 };
