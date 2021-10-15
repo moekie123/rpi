@@ -11,6 +11,15 @@
 #include "Logger.h"
 #include "MqttClient.h"
 
+struct package
+{
+	const int identifier;
+	const std::string topic;
+	const std::string payload;
+	const int qos;
+	const bool retained;
+};
+
 /* Mqtt States */
 struct sUninitialized;
 struct sConnecting;
@@ -31,7 +40,6 @@ struct eStartup : tinyfsm::Event { };
 struct eTerminate : tinyfsm::Event { };
 struct eConnected : tinyfsm::Event { };
 struct eDisconnected : tinyfsm::Event { };
-struct eDestroy : tinyfsm::Event { };
 struct eRetry : tinyfsm::Event { };
 
 struct ePublish : tinyfsm::Event 
@@ -71,7 +79,6 @@ public:
 	virtual void react( eStartup const & ){};
 	virtual void react( eConnected const & ){};
 	virtual void react( eDisconnected const & ){};
-	virtual void react( eDestroy const & ){};
 	virtual void react( ePublish const & ){};
 	
 	virtual void react( eRetry const & )
@@ -123,18 +130,32 @@ public:
 	}
 
 protected:
+	// Configuration
 	const std::string name;
+	inline static const std::string identifier = "controller";
+	inline static const std::string username = "admin";
+	inline static const std::string password = "password";
+	
+	inline static const std::string lastWillTopic = "controller";
+	inline static const std::string lastWillPayload = "";
+	inline static const int lastWillQos = 0;
+	inline static const bool lastWillRetained = false;
+
+	inline static const std::string host = "mosquitto";
+	inline static const int port = 1883;
+	inline static const int keep_alive = 5;
 
 	inline static bool active = false;
 	inline static mosquitto* client = nullptr;
-
-	inline static std::vector< Observer* > observers;
 
 	virtual inline void entering(){};
 	virtual inline void retry(){};
 	virtual inline void terminate(){};
 
 	int retryMax = 3;
+
+	inline static std::vector< Observer* > observers;
+
 
 private:
 	int retryCntr;
@@ -152,6 +173,62 @@ void on_message(struct mosquitto* client, void * obj, const struct mosquitto_mes
 	std::string payload( (char*)message->payload, message->payloadlen );
 
 	logger::info("received message: topic:{} payload:{}", topic, payload);
+}
+
+void on_connect ( struct mosquitto* client , void* obj, int rc )
+{
+	logger::trace("received connect response {}", rc);
+
+	if( rc == 0 )
+	{
+		logger::info("connection accepted");
+
+		eConnected ec;
+		MqttClientState::dispatch(ec);
+
+		return;
+	}
+	else if( rc == 1 )
+		logger::error("connection failure: incorrect protocol");
+	else if( rc == 2 )
+		logger::error("connection failure: identifier rejected");
+	else if( rc == 3 )
+		logger::error("connection failure: server unvailable");
+	else if( rc == 4 )
+		logger::error("connection failure: incorrect credentials");
+	else if( rc == 5 )
+		logger::error("connection failure: not authorized");
+	else
+		logger::error("connection failure: unknown errer {}", rc);
+
+	eRetry er;
+	MqttClientState::dispatch(er);
+}
+
+void on_disconnect ( struct mosquitto* client , void* obj, int rc )
+{
+	logger::trace("received disconnect response {}", rc);
+
+	if( rc == 0 )
+	{
+		eDisconnected ed;
+		MqttClientState::dispatch(ed);
+		return;
+	}
+	
+	logger::error("disconnect: invalid response {}", rc );
+	eRetry er;
+	MqttClientState::dispatch(er);
+}
+
+void on_publish( struct mosquitto* client, void* obj, int mid )
+{
+	logger::info("published id:{}", mid);
+}
+
+void on_subscribe( struct mosquitto* client, void* obj, int mid, int qos_count, const int *qos_grand )
+{
+	logger::info("subscribed id:{}", mid);
 }
 
 /**
@@ -172,6 +249,7 @@ private:
 	void react( eStartup const & )
 	{
 		int res;
+		
 		// Initialize Mosquitto Library
 		res =  mosquitto_lib_init();
 		if( res != MOSQ_ERR_SUCCESS )
@@ -182,43 +260,30 @@ private:
 		}
 
 		// Initial Creating
-		const std::string identifier = "controller";
-
-		bool created = false;
 		if( !client )
 		{
 			client = mosquitto_new( identifier.c_str(), true, NULL );
 
-			if( client )
-				created = true;
-			else
+			if( !client )
+			{	
 				logger::error( name + " :" + strerror(errno) );
+				MqttClientState::transit<sError>();
+			}
 		}
 		// Recreation
 		else
 		{
 			int res = mosquitto_reinitialise( client, identifier.c_str(), true, NULL );
 
-			if( res == MOSQ_ERR_SUCCESS )
-				created = true;
-			else
+			if( res != MOSQ_ERR_SUCCESS )
+			{
 				logger::error(mosquitto_strerror( res ));
+				MqttClientState::transit<sError>();
+			}
 		}
-
-		if( !created )
-		{
-			MqttClientState::transit<sError>();
-			return;
-		}
-
-		// Allow Async behaviour
-		//mosquitto_threaded_set(client, true);
 
 		// Configure username and password
-		const std::string username = "admin";
-		const std::string password = "password";
-
-		logger::info("configure: username:{} password:{}", username, password);
+		logger::info("configure: u[{}] p[{}]", username, password);
 		res = mosquitto_username_pw_set( client, username.c_str(), password.c_str() );
 		if( res != MOSQ_ERR_SUCCESS )
 		{
@@ -227,13 +292,8 @@ private:
 		}
 
 		// Configure last will
-		const std::string topic = "controller";
-		const std::string msg = "";
-		const int qos = 0;
-		const bool retain = false;
-
-		logger::info("configure: topic:{} message:{}", topic.c_str(), msg.c_str());
-		res = mosquitto_will_set( client, topic.c_str(), msg.size(), msg.c_str(), qos, retain );
+		logger::info("configure: topic:{} message:{}", lastWillTopic.c_str(), lastWillPayload.c_str());
+		res = mosquitto_will_set( client, lastWillTopic.c_str(), lastWillPayload.size(), lastWillPayload.c_str(), lastWillQos, lastWillRetained );
 		if( res != MOSQ_ERR_SUCCESS )
 		{
 			logger::error(mosquitto_strerror( res ));
@@ -270,34 +330,6 @@ private:
 /**
 * State: Connecting
 */
-void on_connect ( struct mosquitto* client , void* obj, int rc )
-{
-	logger::trace("received connect response {}", rc);
-
-	if( rc == 0 )
-	{
-		logger::info("connection accepted");
-
-		eConnected ec;
-		MqttClientState::dispatch(ec);
-
-		return;
-	}
-	else if( rc == 1 )
-		logger::error("connection failure: incorrect protocol");
-	else if( rc == 2 )
-		logger::error("connection failure: identifier rejected");
-	else if( rc == 3 )
-		logger::error("connection failure: server unvailable");
-	else if( rc == 4 )
-		logger::error("connection failure: incorrect credentials");
-	else if( rc == 5 )
-		logger::error("connection failure: not authorized");
-
-	eRetry er;
-	MqttClientState::dispatch(er);
-}
-
 class sConnecting:
 	public MqttClientState
 {
@@ -311,6 +343,9 @@ public:
 
 	void react( eConnected const & ) override
 	{
+		int sock = mosquitto_socket(client);
+		logger::info("client socket {}", sock );
+
 		MqttClientState::transit<sIdle>();
 	}
 
@@ -325,10 +360,6 @@ public:
 	};
 
 private:
-	const std::string host = "mosquitto";
-	const int port = 1883;
-	const int keep_alive = 5;
-
 	void connect()
 	{
 		logger::info("connect to broker: {}:{}", host, port);
@@ -348,22 +379,6 @@ private:
 /**
 * State: Idle
 */
-
-/*
-int mosquitto_publish(struct mosquitto * mosq, int *mid, const char * topic, int payloadlen, const void * payload, int qos, bool retain	)
-bmosq_EXPORT int mosquitto_subscribe( struct mosquitto * mosq, int * mid, const char * sub, int qos )
-*/
-
-void on_publish( struct mosquitto* client, void* obj, int mid )
-{
-	logger::info("published id:{}", mid);
-}
-
-void on_subscribe( struct mosquitto* client, void* obj, int mid, int qos_count, const int *qos_grand )
-{
-	logger::info("subscribed id:{}", mid);
-}
-
 class sIdle:
 	public MqttClientState
 {
@@ -378,7 +393,6 @@ public:
 			logger::error(mosquitto_strerror( res ));
 		}
 
-		// DEBUG
 		MqttClientState::transit<sDisconnecting>();
 
 	};
@@ -392,23 +406,6 @@ public:
 /**
 * State: Disconnecting
 */
-void on_disconnect ( struct mosquitto* client , void* obj, int rc )
-{
-	logger::trace("received disconnect response {}", rc);
-
-	if( rc == 0 )
-	{
-		eDisconnected ed;
-		MqttClientState::dispatch(ed);
-	}
-	else
-	{
-		logger::error("disconnect: invalid response {}", rc );
-		eRetry er;
-		MqttClientState::dispatch(er);
-	}
-}
-
 class sDisconnecting:
 	public MqttClientState
 {
@@ -422,6 +419,11 @@ public:
 
 	void react( eDisconnected const& ) override
 	{
+		int sock = mosquitto_socket(client);
+		logger::info("client socket {}", sock );
+
+		std::this_thread::sleep_for( std::chrono::seconds( keep_alive ));
+
 		MqttClientState::transit<sTerminated>();
 	}
 
@@ -438,12 +440,13 @@ public:
 private:
 	void disconnect()
 	{
+		int res;
 		logger::info("disconnect from broker");
 
 		/**
 		 * callback 'on_disconnect' has been attached to mosquitto library
 		 */
-		int res = mosquitto_disconnect( client );
+		res = mosquitto_disconnect( client );
 		if( res != MOSQ_ERR_SUCCESS )
 		{
 			logger::error(mosquitto_strerror( res ));
@@ -466,26 +469,16 @@ private:
 	
 	inline void entering() override
 	{
-
-		active = false;
-		for( auto observer: observers )
-			observer->halted();
-	}
-	
-	void react( eDestroy const & ) override
-	{
 		int res;
 
-		// For some reason this fails
-		/*
-		res = mosquitto_loop_stop( client, true);
+		logger::info("stop loop");
+		res = mosquitto_loop_stop( client, false );
 		if( res != MOSQ_ERR_SUCCESS )
 		{
 			logger::error(mosquitto_strerror( res ));
 			MqttClientState::transit<sError>();
 			return;
 		}
-		*/
 
 		// Destory
 		logger::info("destroy mosquitto");
@@ -502,7 +495,11 @@ private:
 			return;
 		}
 
-	};
+		active = false;
+
+		for( auto observer: observers )
+			observer->halted();
+	}
 };
 
 /**
@@ -539,10 +536,6 @@ MqttClient::MqttClient()
 MqttClient::~MqttClient()
 {
 	logger::trace("destruct");
-
-	tinyfsm::Event er;
-	MqttClientState::dispatch(er);
-
 }
 
 void MqttClient::run()
