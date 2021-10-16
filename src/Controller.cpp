@@ -1,59 +1,56 @@
-#include <chrono>
-
-#include <spdlog/spdlog.h>
 #include <tinyfsm/tinyfsm.hpp>
 
-#include "Controller.h"
-#include "Device.h"
+#include "Logger.h"
 
-using devices = DeviceList<
-//	Device<0,14>,
-	Device<0,15>
-	>;
+#include "Controller.h"
+#include "MqttClient.h"
+
+MqttClient* client;
 
 Controller::Controller()
 {
-	spdlog::trace("construct");
+	logger::trace("construct");
+
+	client = new MqttClient();
+	client->attach( this );
 }
 
 Controller::~Controller()
 {
-	spdlog::trace("destruct");
+	logger::trace("destruct");
+	delete client;
 }
 
 void Controller::run()
 {
-	spdlog::info("run");
-
-	CycleEvent event;
-
-	devices::attach( this );
-	devices::start();
-
-	active = true;
-	while( true )
-	{
-		spdlog::trace("cycle");
-
-		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
-		
-		if( !active && devices::isIdle() ) break;
-
-		devices::dispatch( event );
-	}
+	logger::info("run");
+	client->run();
 }
 
 void Controller::halt()
 {
-	spdlog::info("halt");
-
-	active = false;
-
-	HaltEvent event;
-	devices::dispatch( event );
+	logger::info("halt");
+	client->halt();
 }
 
-void Controller::update( int chip, int channel, const std::string& topic, const std::string& message )
+bool Controller::isRunning()
 {
-	spdlog::trace("update: {} {} {} {}", chip, channel, topic, message);
+	return client->isRunning();
+}
+
+/* Observer Pattern */
+void Controller::update( const std::string &name )
+{
+	logger::info("update: " + name );
+
+	if( name.compare("idle") == 0 )
+	{
+		logger::info("Publish");
+		client->publish();
+	}
+}
+
+void Controller::halted()
+{
+	logger::info("halted");
 }

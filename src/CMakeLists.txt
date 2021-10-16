@@ -1,1 +1,1 @@
-add_library(controller OBJECT Controller.cpp Device.cpp Mosquitto.cpp)
+add_library(controller OBJECT Controller.cpp MqttClient.cpp Observer.cpp )

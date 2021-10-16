@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstring>
+#include <string>
 
 #include "Observer.h"
 
@@ -14,9 +14,9 @@ public:
 	void run();
 	void halt();
 
-	/* Observer Pattern */
-	void update( int, int, const std::string&, const std::string& ) override;
+	bool isRunning();
 
-private:
-	bool active = false;
+	/* Observer */
+	void update( const std::string & ) override;
+	void halted() override;
 };

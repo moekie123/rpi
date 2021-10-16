@@ -1,9 +1,13 @@
 #pragma once
 
-#include <cstring>
+#include <string>
 
 class Observer
 {
-	public:
-		virtual void update( const int, const int, const std::string&, const std::string& ) = 0;
+public:
+	virtual ~Observer();
+
+	virtual void update( const std::string& ) = 0;
+
+	virtual void halted() = 0;
 };
