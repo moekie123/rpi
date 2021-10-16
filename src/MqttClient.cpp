@@ -203,6 +203,7 @@ void on_disconnect ( struct mosquitto* client , void* obj, int rc )
 	}
 	
 	logger::error("disconnect: invalid response {}", rc );
+
 	eRetry er;
 	MqttClientState::dispatch(er);
 }
@@ -306,11 +307,6 @@ private:
 
 		MqttClientState::transit<sConnecting>();
 	};
-
-	inline void terminate() override
-	{
-		MqttClientState::transit<sTerminated>();
-	};
 };
 
 /**
@@ -381,8 +377,6 @@ public:
 		{
 			logger::error(mosquitto_strerror( res ));
 		}
-
-		MqttClientState::transit<sDisconnecting>();
 	};
 
 	inline void terminate() override
@@ -419,11 +413,6 @@ public:
 	{
 		disconnect();
 	}
-
-	inline void terminate() override
-	{
-		MqttClientState::transit<sTerminated>();
-	};
 
 private:
 	void disconnect()
