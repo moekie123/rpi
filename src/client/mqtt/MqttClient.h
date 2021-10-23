@@ -1,22 +1,27 @@
 #pragma once
 
+#include <string>
 #include <memory>
+
+#include "../ClientBase.h"
 #include "Observer.h"
 
-class MqttClient
+class MqttClient:
+	public ClientBase
 {
 public:
-	MqttClient();
+	MqttClient( const std::string );
 	~MqttClient();
-
-	void run();
-	void halt();
 
 	void attach( Observer* );
 
 	void publish();
 
 	bool isRunning();
+
+	/* Client Interface */
+	void start() override;
+	void stop() override;
 
 private:
 	inline static bool active = false;

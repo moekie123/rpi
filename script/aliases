@@ -9,6 +9,8 @@ fi
 alias cdp='cd $PROJECT_DIR/'
 alias cdb='cd $PROJECT_DIR/build'
 alias cds='cd $PROJECT_DIR/src'
+alias cdsct='cd $PROJECT_DIR/src/controller'
+alias cdscl='cd $PROJECT_DIR/src/client'
 alias cdi='cd $PROJECT_DIR/include'
 alias cdc='cd $PROJECT_DIR/config'
 

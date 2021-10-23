@@ -6,14 +6,16 @@
 #include <tinyfsm/tinyfsm.hpp>
 
 #include "Logger.h"
-#include "Controller.h"
 
-Controller* controller;
+#include "Factory.h"
+#include "IController.h"
+
+IController* controller;
 
 void terminate( int signal )
 {
 	logger::info("terminate");
-	controller->halt();
+	controller->stop();
 }
 
 int main( int argc, char *argv[] )
@@ -31,14 +33,16 @@ int main( int argc, char *argv[] )
 	
 	sigaction( SIGINT, &sigIntHandler, NULL );
 
-	controller = new Controller();
-	controller->run();
-
+	Factory<IController>* fController = new Factory<IController>();
+	controller = fController->create("mqtt-controller");
+	controller->start();
+	
+/*
 	while( controller->isRunning() )
 		std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ));
+*/
 
 	delete controller;
-
 	logger::info("terminate application");
 
 	return 0;

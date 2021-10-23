@@ -5,7 +5,7 @@
 class Observer
 {
 public:
-	virtual ~Observer();
+	virtual ~Observer(){};
 
 	virtual void update( const std::string& ) = 0;
 

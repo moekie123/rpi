@@ -498,9 +498,10 @@ private:
 
 FSM_INITIAL_STATE( MqttClientState, sUninitialized )
 
-MqttClient::MqttClient()
+MqttClient::MqttClient( const std::string name ):
+	ClientBase( name )
 {
-	logger::trace("construct");
+	logger::trace( this->name + ": construct");
 	
 	int major, minor, revision;
 	mosquitto_lib_version( &major, &minor, &revision );
@@ -511,33 +512,33 @@ MqttClient::MqttClient()
 
 MqttClient::~MqttClient()
 {
-	logger::trace("destruct");
+	logger::trace( this->name + ": destruct");
 }
 
-void MqttClient::run()
+void MqttClient::start()
 {
-	logger::debug("run");
+	logger::debug( this->name + ": start");
 
 	eStartup es;
 	MqttClientState::dispatch(es);
 }
 
+void MqttClient::stop()
+{
+	logger::debug( this->name + ": stop");
+	
+	eTerminate et;
+	MqttClientState::dispatch(et);
+}
+
 void MqttClient::publish()
 {
-	logger::debug("publish");
+	logger::debug( this->name + ": publish");
 
 	MqttPackage package = { 1, "controller/config", "{'version':1}", 0, false };
 	ePublish ep( package );
 
 	MqttClientState::dispatch(ep);
-}
-
-void MqttClient::halt()
-{
-	logger::debug("halt");
-	
-	eTerminate et;
-	MqttClientState::dispatch(et);
 }
 
 bool MqttClient::isRunning()
