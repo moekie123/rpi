@@ -20,6 +20,7 @@ ClientBase::~ClientBase()
 	logger::trace( this->name + ": destruct" );
 }
 
+/* Client Interface */
 void ClientBase::start()
 {
 	logger::info( this->name + ": start" );

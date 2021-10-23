@@ -2,8 +2,13 @@
 
 #include "Runnable.h"
 
+#include "Observable.h"
+#include "Observer.h"
+
 class IClient:
-	public Runnable
+	public Runnable, 
+	public Observable,
+	public Observer
 {
 
 };

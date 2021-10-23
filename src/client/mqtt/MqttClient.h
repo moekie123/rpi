@@ -13,12 +13,6 @@ public:
 	MqttClient( const std::string );
 	~MqttClient();
 
-	void attach( Observer* );
-
-	void publish();
-
-	bool isRunning();
-
 	/* Client Interface */
 	void start() override;
 	void stop() override;

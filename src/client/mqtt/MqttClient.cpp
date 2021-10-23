@@ -99,8 +99,8 @@ public:
 
 		entering();
 	
-		for( auto observer: observers )
-			observer->update(name);
+//		for( auto observer: observers )
+//			observer->update(name);
 	}
 
 	virtual void exit( void )
@@ -474,8 +474,8 @@ private:
 
 		active = false;
 
-		for( auto observer: observers )
-			observer->halted();
+//		for( auto observer: observers )
+//			observer->halted();
 	}
 };
 
@@ -531,6 +531,7 @@ void MqttClient::stop()
 	MqttClientState::dispatch(et);
 }
 
+/*
 void MqttClient::publish()
 {
 	logger::debug( this->name + ": publish");
@@ -540,13 +541,4 @@ void MqttClient::publish()
 
 	MqttClientState::dispatch(ep);
 }
-
-bool MqttClient::isRunning()
-{
-	return MqttClientState::isRunning();
-}
-
-void MqttClient::attach( Observer* observer )
-{
-	MqttClientState::attach( observer );
-}
+*/

@@ -16,7 +16,7 @@ ControllerBase::ControllerBase( const std::string name, IClient* client ):
 	logger::trace( this->name + ": construct" );
 
 	this->client = client;
-//	client->attach( this );
+	client->attach( this );
 }
 
 
@@ -26,11 +26,7 @@ ControllerBase::~ControllerBase()
 	delete client;
 }
 
-bool ControllerBase::isRunning()
-{
-//	return client->isRunning();
-}
-
+/* Controller Interface */
 void ControllerBase::start()
 {
 	logger::info( this->name + ": start");
@@ -44,18 +40,7 @@ void ControllerBase::stop()
 }
 
 /* Observer Pattern */
-void ControllerBase::update( const std::string &name )
+void ControllerBase::update( const std::string &name, const void* data )
 {
 	logger::info( this->name + ": update " + name );
-
-	if( name.compare("idle") == 0 )
-	{
-		logger::info("Publish");
-//		client->publish();
-	}
-}
-
-void ControllerBase::halted()
-{
-	logger::info( this->name + ": halted");
 }
