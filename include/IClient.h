@@ -2,6 +2,8 @@
 
 #include "Runnable.h"
 
+#include "IProtocol.h"
+
 #include "Observable.h"
 #include "Observer.h"
 

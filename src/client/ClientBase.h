@@ -3,6 +3,7 @@
 #include <string>
 
 #include "IClient.h"
+
 #include "Observable.h"
 #include "Observer.h"
 
@@ -10,8 +11,8 @@ class ClientBase:
 	public IClient
 {
 public:
-	ClientBase();
-	ClientBase( const std::string );
+	ClientBase( IProtocol* );
+	ClientBase( const std::string, IProtocol* );
 
 	~ClientBase();
 
@@ -20,8 +21,7 @@ public:
 	void stop() override;
 
 	/* Observer */
-	void update( const std::string&, const void* ) override
-	{}
+	void update( const std::string&, const void* ) override;
 
 protected:
 	const std::string name;

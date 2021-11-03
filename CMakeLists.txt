@@ -30,6 +30,6 @@ add_subdirectory(src)
 
 message("Build Project")
 add_executable(Controller main.cpp)
-target_link_libraries(Controller controller client mosquitto pthread)
+target_link_libraries(Controller controller client protocol mosquitto pthread)
 
 

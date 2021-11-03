@@ -11,6 +11,7 @@ ControllerBase::ControllerBase( IClient* client ):
 }
 
 ControllerBase::ControllerBase( const std::string name, IClient* client ): 
+	IController( name ),
 	name( name )
 {
 	logger::trace( this->name + ": construct" );
@@ -30,6 +31,8 @@ ControllerBase::~ControllerBase()
 void ControllerBase::start()
 {
 	logger::info( this->name + ": start");
+
+	this->running = true;
 	client->start();
 }
 
@@ -40,7 +43,13 @@ void ControllerBase::stop()
 }
 
 /* Observer Pattern */
-void ControllerBase::update( const std::string &name, const void* data )
+void ControllerBase::update( const std::string &cmd, const void* data )
 {
-	logger::info( this->name + ": update " + name );
+	logger::info( this->name + ": update " + cmd );
+	
+	if( cmd.compare("destroyed") == 0 )
+	{
+		this->running = false;
+	}
+
 }

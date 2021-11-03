@@ -3,9 +3,9 @@
 
 #include "Factory.h"
 #include "IClient.h"
+#include "IProtocol.h"
 
 #include "ClientBase.h"
-#include "mqtt/MqttClient.h"
 
 // Forware declaration
 template<>
@@ -22,13 +22,14 @@ IClient* Factory<IClient>::create( const std::string& type, const std::string& p
 {
 	IClient* client;
 
-	if( type.find("client") != std::string::npos )
+	const std::string name = prefix + "/client";
+
+	if( type.find("MqttController") != std::string::npos )
 	{
-		client = new ClientBase( prefix + "/base" );
-	}
-	else if( type.find("mqtt") != std::string::npos )
-	{
-		client = new MqttClient( prefix + "/mqtt" );
+		Factory<IProtocol>* fProtocol = new Factory<IProtocol>();
+		IProtocol* protocol = fProtocol->create( "mqtt", name );
+
+		client = new ClientBase( name, protocol );
 	}
 
 	if( !client ) throw std::runtime_error("failed to create client");

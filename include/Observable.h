@@ -11,7 +11,7 @@ class Observable
 public:
 	void attach( Observer* observer )
 	{
-		logger::trace("Observable: attach");
+		logger::trace("attach observer: {}", fmt::ptr( observer ));
 		observers.push_back(observer);
 	}
 

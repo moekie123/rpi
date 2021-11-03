@@ -1,6 +1,8 @@
 #include <string>
 #include <stdexcept>
 
+#include "Logger.h"
+
 #include "Factory.h"
 #include "IController.h"
 
@@ -21,13 +23,16 @@ IController* Factory<IController>::create( const std::string & type, const std::
 {
 	IController* controller;
 
-	if( type.find("controller") != std::string::npos )
+	logger::debug("Controller Factory: create [{}]", type);
+
+	const std::string name = prefix + "/controller";
+
+	if( type.find("MqttController") != std::string::npos )
 	{
 		Factory<IClient>* fClient = new Factory<IClient>();
+		IClient* client = fClient->create( type, name );
 
-		IClient* client = fClient->create( "mqtt", prefix );
-
-		controller = new ControllerBase( prefix, client );
+		controller = new ControllerBase( name, client );
 	}
 
 	if( !controller ) throw std::runtime_error("failed to create controlller");
