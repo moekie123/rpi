@@ -12,10 +12,11 @@ ClientBase::ClientBase( IProtocol* protocol )
 {
 }
 
-ClientBase::ClientBase( const std::string name, IProtocol* protocol  ):
-	name( name )
+ClientBase::ClientBase( const std::string name, IProtocol* protocol  )
 {
-	logger::trace( this->name + ": construct" );
+	logger::trace( name + ": construct" );
+
+	this->name = name;
 
 	ClientState::prefix = this->name + "/fsm";
 

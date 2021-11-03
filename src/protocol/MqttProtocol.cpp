@@ -2,6 +2,7 @@
 
 #include "Logger.h"
 
+#include "IProtocol.h"
 #include "MqttProtocol.h"
 
 /* Mosquitto callbacks */
@@ -17,10 +18,11 @@ MqttProtocol::MqttProtocol()
 {
 }
 
-MqttProtocol::MqttProtocol( const std::string name ):
-	name( name )
+MqttProtocol::MqttProtocol( const std::string name )
 {
-	logger::trace( this->name + ": construct" );
+	logger::trace( name + ": construct" );
+
+	this->name = name;
 }
 
 MqttProtocol::~MqttProtocol()

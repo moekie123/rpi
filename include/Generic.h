@@ -1,13 +1,10 @@
 #pragma once
 
+#include "Logger.h"
+
 class Generic
 {
 
-protected:
-	Generic( std::string _test): test(_test)
-	{
-
-	}
-
-	const std::string test;
+public:
+	std::string name;
 };

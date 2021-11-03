@@ -22,7 +22,4 @@ public:
 
 	/* Observer */
 	void update( const std::string&, const void* ) override;
-
-protected:
-	const std::string name;
 };

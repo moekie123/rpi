@@ -10,11 +10,11 @@ ControllerBase::ControllerBase( IClient* client ):
 {
 }
 
-ControllerBase::ControllerBase( const std::string name, IClient* client ): 
-	IController( name ),
-	name( name )
+ControllerBase::ControllerBase( const std::string name, IClient* client )
 {
-	logger::trace( this->name + ": construct" );
+	logger::trace( name + ": construct" );
+	
+	this->name = name;
 
 	this->client = client;
 	client->attach( this );

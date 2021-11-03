@@ -21,6 +21,5 @@ public:
 	void update( const std::string &, const void * ) override;
 
 private:
-	const std::string name;
 	IClient* client;
 };

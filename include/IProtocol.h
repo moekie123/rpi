@@ -3,6 +3,7 @@
 #include "Observable.h"
 
 class IProtocol:
+	public virtual Generic,
 	public Observable
 {
 public:

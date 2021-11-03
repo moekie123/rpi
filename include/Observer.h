@@ -2,7 +2,10 @@
 
 #include <string>
 
-class Observer
+#include "Generic.h"
+
+class Observer:
+	public virtual Generic
 {
 public:
 	virtual ~Observer(){};

@@ -1,6 +1,9 @@
 #pragma once
 
-class Runnable
+#include "Generic.h"
+
+class Runnable:
+	public virtual Generic
 {
 public:
 	virtual void start() = 0;

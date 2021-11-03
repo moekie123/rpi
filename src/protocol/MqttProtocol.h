@@ -27,7 +27,6 @@ public:
 	void disconnect() override;
 	void destroy() override;
 
-	const std::string name;
 protected:
 
 	// Configuration
