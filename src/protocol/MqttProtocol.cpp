@@ -163,7 +163,7 @@ void on_log( struct mosquitto* client, void* obj, int level, const char* msg )
 {
 	MqttProtocol* p = (MqttProtocol*) obj;
 
-	logger::trace( p->name + ": mosquito lib: {}", msg);
+	logger::trace( p->getName() + ": mosquito lib: {}", msg);
 }
 
 void on_message(struct mosquitto* client, void * obj, const struct mosquitto_message* message )
@@ -173,18 +173,18 @@ void on_message(struct mosquitto* client, void * obj, const struct mosquitto_mes
 	std::string topic( message->topic );
 	std::string payload( (char*)message->payload, message->payloadlen );
 
-	logger::info( p->name + ": received message: topic:{} payload:{}", topic, payload);
+	logger::info( p->getName() + ": received message: topic:{} payload:{}", topic, payload);
 }
 
 void on_connect ( struct mosquitto* client , void* obj, int rc )
 {
 	MqttProtocol* p = (MqttProtocol*) obj;
 
-	logger::trace( p->name + "received connect response {}", rc);
+	logger::trace( p->getName() + "received connect response {}", rc);
 
 	if( rc == 0 )
 	{
-		logger::info( p->name + ": connection accepted");
+		logger::info( p->getName() + ": connection accepted");
 		p->notify("connected", nullptr);
 		return;
 	}
@@ -208,7 +208,7 @@ void on_disconnect ( struct mosquitto* client , void* obj, int rc )
 {
 	MqttProtocol* p = (MqttProtocol*) obj;
 
-	logger::trace( p->name + ": received disconnect response {}", rc);
+	logger::trace( p->getName() + ": received disconnect response {}", rc);
 
 	if( rc == 0 )
 	{
@@ -227,13 +227,13 @@ void on_publish( struct mosquitto* client, void* obj, int mid )
 {
 	MqttProtocol* p = (MqttProtocol*) obj;
 
-	logger::info( p->name + ": published id:{}", mid);
+	logger::info( p->getName() + ": published id:{}", mid);
 }
 
 void on_subscribe( struct mosquitto* client, void* obj, int mid, int qos_count, const int *qos_grand )
 {
 	MqttProtocol* p = (MqttProtocol*) obj;
 
-	logger::info( p->name + ": subscribed id:{}", mid);
+	logger::info( p->getName() + ": subscribed id:{}", mid);
 }
 
