@@ -17,7 +17,6 @@ class MqttProtocol:
 	public IProtocol
 {
 public:
-	MqttProtocol();
 	MqttProtocol( const std::string );	
 
 	~MqttProtocol();

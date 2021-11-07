@@ -34,7 +34,7 @@ int main( int argc, char *argv[] )
 	sigaction( SIGINT, &sigIntHandler, NULL );
 
 	Factory<IController>* fController = new Factory<IController>();
-	controller = fController->create("MqttController", "pca9685");
+	controller = fController->create("MqttController");
 	controller->start();
 	
 	while( controller->isRunning() )

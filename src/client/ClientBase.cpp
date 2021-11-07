@@ -7,11 +7,6 @@
 
 #include "IProtocol.h"
 
-ClientBase::ClientBase( IProtocol* protocol )
-	:ClientBase("/", protocol)
-{
-}
-
 ClientBase::ClientBase( const std::string name, IProtocol* protocol  )
 {
 	logger::trace( name + ": construct" );

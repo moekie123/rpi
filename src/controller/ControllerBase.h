@@ -9,7 +9,6 @@ class ControllerBase:
 	public IController
 {
 public:
-	ControllerBase( IClient* );
 	ControllerBase( const std::string, IClient* );
 	~ControllerBase();
 

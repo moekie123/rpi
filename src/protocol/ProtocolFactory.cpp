@@ -17,11 +17,9 @@ IProtocol* Factory<IProtocol>::create( const std::string& type )
 }
 
 template<>
-IProtocol* Factory<IProtocol>::create( const std::string& type, const std::string& prefix )
+IProtocol* Factory<IProtocol>::create( const std::string& type, const std::string& name )
 {
 	IProtocol* protocol;
-
-	const std::string name = prefix + "/protocol";
 
 	if( type.find("mqtt") != std::string::npos )
 	{

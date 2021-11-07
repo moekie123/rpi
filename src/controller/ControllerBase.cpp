@@ -5,10 +5,6 @@
 #include "ControllerBase.h"
 
 IClient* client;
-ControllerBase::ControllerBase( IClient* client ): 
-	ControllerBase("/", client)
-{
-}
 
 ControllerBase::ControllerBase( const std::string name, IClient* client )
 {

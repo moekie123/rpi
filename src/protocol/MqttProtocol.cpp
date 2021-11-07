@@ -13,11 +13,6 @@ void on_publish( struct mosquitto*, void*, int );
 void on_subscribe( struct mosquitto*, void*, int, int, const int * );
 void on_message(struct mosquitto* client, void * obj, const struct mosquitto_message* message );
 
-MqttProtocol::MqttProtocol()
-	:MqttProtocol("/")
-{
-}
-
 MqttProtocol::MqttProtocol( const std::string name )
 {
 	logger::trace( name + ": construct" );

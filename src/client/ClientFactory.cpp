@@ -18,16 +18,14 @@ IClient* Factory<IClient>::create( const std::string& type )
 }
 
 template<>
-IClient* Factory<IClient>::create( const std::string& type, const std::string& prefix )
+IClient* Factory<IClient>::create( const std::string& type, const std::string& name )
 {
 	IClient* client;
-
-	const std::string name = prefix + "/client";
 
 	if( type.find("MqttController") != std::string::npos )
 	{
 		Factory<IProtocol>* fProtocol = new Factory<IProtocol>();
-		IProtocol* protocol = fProtocol->create( "mqtt", name );
+		IProtocol* protocol = fProtocol->create( "mqtt", name + "/" + "protocol" );
 
 		client = new ClientBase( name, protocol );
 	}

@@ -11,7 +11,6 @@ class ClientBase:
 	public IClient
 {
 public:
-	ClientBase( IProtocol* );
 	ClientBase( const std::string, IProtocol* );
 
 	~ClientBase();

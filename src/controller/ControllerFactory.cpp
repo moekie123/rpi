@@ -19,18 +19,17 @@ IController* Factory<IController>::create( const std::string & type )
 }
 
 template<>
-IController* Factory<IController>::create( const std::string & type, const std::string & prefix )
+IController* Factory<IController>::create( const std::string & type, const std::string & name )
 {
 	IController* controller;
 
 	logger::debug("Controller Factory: create [{}]", type);
 
-	const std::string name = prefix + "/controller";
-
 	if( type.find("MqttController") != std::string::npos )
 	{
 		Factory<IClient>* fClient = new Factory<IClient>();
-		IClient* client = fClient->create( type, name );
+
+		IClient* client = fClient->create( type, name + "/" + "client" );
 
 		controller = new ControllerBase( name, client );
 	}
