@@ -8,6 +8,7 @@
 class ProtocolMock:
 	public IProtocol
 {
+public:
 	MOCK_METHOD( void, configure, (), (override));
 	MOCK_METHOD( void, connect, (), (override));
 	MOCK_METHOD( void, disconnect, (), (override));
