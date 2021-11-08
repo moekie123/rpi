@@ -7,18 +7,16 @@
 #include "Observable.h"
 #include "Observer.h"
 
-class ClientBase:
-	public IClient
-{
-public:
-	ClientBase( const std::string, IProtocol* );
+class ClientBase : public IClient {
+  public:
+    ClientBase( const std::string, IProtocol * );
 
-	~ClientBase();
+    ~ClientBase();
 
-	/* Client Interface */
-	void start() override;
-	void stop() override;
+    /* Client Interface */
+    void start() override;
+    void stop() override;
 
-	/* Observer */
-	void update( const std::string&, const void* ) override;
+    /* Observer */
+    void update( const std::string &, const void * ) override;
 };

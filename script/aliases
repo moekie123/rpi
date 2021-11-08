@@ -27,7 +27,8 @@ alias dcb='docker build . -t environment:latest'
 
 # Build shortcuts
 alias build='make -C $PROJECT_DIR/build/ --no-print-directory'
-alias verify='make -C $PROJECT_DIR/build/ test'
+alias verify='make -C $PROJECT_DIR/build/ --no-print-directory test'
+alias format='make -C $PROJECT_DIR/build/ --no-print-directory clangformat'
 
 # Include binaries
 export PATH=$PROJECT_DIR/bin:$PATH

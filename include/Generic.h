@@ -2,15 +2,11 @@
 
 #include "Logger.h"
 
-class Generic
-{
+class Generic {
 
-public:
-	const std::string& getName()
-	{
-		return name;
-	}
+  public:
+    const std::string &getName() { return name; }
 
-protected:
-	std::string name;
+  protected:
+    std::string name;
 };

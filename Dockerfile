@@ -2,7 +2,7 @@ FROM debian:stable
 
 RUN apt-get update
 
-RUN apt-get install gcc g++ gdb make vim git git-flow libssl-dev -y 
+RUN apt-get install gcc g++ gdb make vim git git-flow libssl-dev clang-format -y 
 
 # Install CMake
 WORKDIR /opt/cmake
