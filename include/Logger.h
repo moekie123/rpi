@@ -1,8 +1,5 @@
 #pragma once
 
-#include <string>
-
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include <spdlog/spdlog.h>
 
 namespace logger
@@ -10,36 +7,36 @@ namespace logger
 	template<typename... Args>
 	inline void trace( Args &&...args )
 	{
-		SPDLOG_TRACE(  args... );
+		spdlog::trace(  args... );
 	}
 
 	template<typename... Args>
 	inline void debug( Args &&...args )
 	{
-		SPDLOG_DEBUG( args... );
+		spdlog::debug( args... );
 	}
 
 	template<typename... Args>
 	inline void info( Args &&...args )
 	{
-		SPDLOG_INFO( args... );
+		spdlog::info( args... );
 	}
 
 	template<typename... Args>
 	inline void warning( Args &&...args )
 	{
-		SPDLOG_WARN( args... );
+		spdlog::warn( args... );
 	}
 
 	template<typename... Args>
 	inline void error( Args &&...args )
 	{
-		SPDLOG_ERROR( args... );
+		spdlog::error( args... );
 	}
 
 	template<typename... Args>
 	inline void critical(  Args &&...args )
 	{
-		SPDLOG_CRITICAL( args... );
+		spdlog::critical( args... );
 	}
 }
