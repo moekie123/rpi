@@ -13,21 +13,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
+message("Include tools")
 include(cmake/clang-format.cmake)
-
-find_package(GTest REQUIRED)
-include(CTest)
-function( CREATE_TEST TEST_NAME )
-	add_executable( ${TEST_NAME}
-		${TEST_NAME}.cpp
-	)
-
-	target_link_libraries( ${TEST_NAME} gtestd gtest_maind gmockd pthread )
-	add_test( NAME ${TEST_NAME} COMMAND ${TEST_NAME} WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} )
-endfunction()
+include(cmake/doxygen.cmake)
+include(cmake/googletest.cmake)
 
 include_directories(include)
-
 add_subdirectory(src)
 
 message("Build Project")

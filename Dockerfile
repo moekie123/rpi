@@ -2,10 +2,11 @@ FROM debian:stable
 
 RUN apt-get update
 
-RUN apt-get install gcc g++ gdb make			 \
-			git git-flow 			 \
-			vim clang-format exuberant-ctags \
-			libssl-dev -y			
+RUN apt-get install gcc g++ gdb make			 		\
+			git git-flow 			 		\
+			vim clang-format exuberant-ctags 		\ 
+			doxygen graphviz				\
+			libssl-dev -y
 
 # Install CMake
 WORKDIR /opt/cmake
