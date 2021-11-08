@@ -21,7 +21,7 @@ IController* Factory<IController>::create( const std::string & type )
 template<>
 IController* Factory<IController>::create( const std::string & type, const std::string & name )
 {
-	IController* controller;
+	IController* controller = nullptr;
 
 	logger::debug("Controller Factory: create [{}]", type);
 
@@ -34,7 +34,8 @@ IController* Factory<IController>::create( const std::string & type, const std::
 		controller = new ControllerBase( name, client );
 	}
 
-	if( !controller ) throw std::runtime_error("failed to create controlller");
+	if( controller == nullptr ) 
+		throw std::runtime_error("failed to create controlller");
 
 	return controller;
 }

@@ -8,6 +8,7 @@
 class ClientMock:
 	public IClient
 {
+public:
 	// Generic
 	MOCK_METHOD( const std::string&, getName, ());
 

@@ -19,14 +19,15 @@ IProtocol* Factory<IProtocol>::create( const std::string& type )
 template<>
 IProtocol* Factory<IProtocol>::create( const std::string& type, const std::string& name )
 {
-	IProtocol* protocol;
+	IProtocol* protocol = nullptr;
 
 	if( type.find("mqtt") != std::string::npos )
 	{
 		protocol = new MqttProtocol( name );
 	}
 
-	if( !protocol ) throw std::runtime_error("failed to create protocol");
+	if( protocol == nullptr ) 
+		throw std::runtime_error("failed to create protocol");
 
 	return protocol;
 }

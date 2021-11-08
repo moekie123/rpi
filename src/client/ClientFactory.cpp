@@ -20,7 +20,7 @@ IClient* Factory<IClient>::create( const std::string& type )
 template<>
 IClient* Factory<IClient>::create( const std::string& type, const std::string& name )
 {
-	IClient* client;
+	IClient* client = nullptr;
 
 	if( type.find("MqttController") != std::string::npos )
 	{
@@ -30,7 +30,8 @@ IClient* Factory<IClient>::create( const std::string& type, const std::string& n
 		client = new ClientBase( name, protocol );
 	}
 
-	if( !client ) throw std::runtime_error("failed to create client");
+	if( client == nullptr ) 
+		throw std::runtime_error("failed to create client");
 
 	return client;
 }
