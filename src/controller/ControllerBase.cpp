@@ -4,48 +4,45 @@
 
 #include "ControllerBase.h"
 
-IClient* client;
+IClient *client;
 
-ControllerBase::ControllerBase( const std::string name, IClient* client )
+ControllerBase::ControllerBase( const std::string name, IClient *client )
 {
-	logger::trace( name + ": construct" );
-	
-	this->name = name;
+    logger::trace( name + ": construct" );
 
-	this->client = client;
-	client->attach( this );
+    this->name = name;
+
+    this->client = client;
+    client->attach( this );
 }
-
 
 ControllerBase::~ControllerBase()
 {
-	logger::trace( this->name + ": destruct");
-	delete client;
+    logger::trace( this->name + ": destruct" );
+    delete client;
 }
 
 /* Controller Interface */
 void ControllerBase::start()
 {
-	logger::info( this->name + ": start");
+    logger::info( this->name + ": start" );
 
-	this->running = true;
-	client->start();
+    this->running = true;
+    client->start();
 }
 
 void ControllerBase::stop()
 {
-	logger::info("stop");
-	client->stop();
+    logger::info( "stop" );
+    client->stop();
 }
 
 /* Observer Pattern */
-void ControllerBase::update( const std::string &cmd, const void* data )
+void ControllerBase::update( const std::string &cmd, const void *data )
 {
-	logger::info( this->name + ": update " + cmd );
-	
-	if( cmd.compare("destroyed") == 0 )
-	{
-		this->running = false;
-	}
+    logger::info( this->name + ": update " + cmd );
 
+    if ( cmd.compare( "destroyed" ) == 0 ) {
+        this->running = false;
+    }
 }

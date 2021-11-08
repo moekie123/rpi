@@ -6,10 +6,8 @@
 #include "Observable.h"
 #include "Observer.h"
 
-class IController:
-	public virtual Generic,
-	public Runnable,
-	public Observable, 
-	public Observer
-{
+class IController : public virtual Generic,
+                    public Runnable,
+                    public Observable,
+                    public Observer {
 };

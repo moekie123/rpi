@@ -9,36 +9,35 @@
 /** Controller Factory
  * 	Create mqtt client
  **/
-TEST( Factory, create_mqtt_protocol ) 
+TEST( Factory, create_mqtt_protocol )
 {
-    	//arrange
-	Factory<IProtocol>* fProtocol = new Factory<IProtocol>();
-	
-	// act
-	auto* protocol = fProtocol->create("mqtt", "client");
+    // arrange
+    Factory< IProtocol > *fProtocol = new Factory< IProtocol >();
 
-	//assert
-	EXPECT_TRUE( (protocol != nullptr) );
+    // act
+    auto *protocol = fProtocol->create( "mqtt", "client" );
+
+    // assert
+    EXPECT_TRUE( ( protocol != nullptr ) );
 }
 
 /** Controller Factory
  * 	Create unknown controller
  **/
-TEST( Factory, create_unknown ) 
+TEST( Factory, create_unknown )
 {
-    	//arrange
-	Factory<IProtocol>* fProtocol = new Factory<IProtocol>();
+    // arrange
+    Factory< IProtocol > *fProtocol = new Factory< IProtocol >();
 
-	//assert
-	EXPECT_ANY_THROW( fProtocol->create("UnknownType", "client"));
+    // assert
+    EXPECT_ANY_THROW( fProtocol->create( "UnknownType", "client" ) );
 }
 
-int main(int argc, char **argv) 
+int main( int argc, char **argv )
 {
-	spdlog::set_level( spdlog::level::warn );
-	spdlog::set_pattern("[%E] %v");
+    spdlog::set_level( spdlog::level::warn );
+    spdlog::set_pattern( "[%E] %v" );
 
-	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+    ::testing::InitGoogleTest( &argc, argv );
+    return RUN_ALL_TESTS();
 }
-

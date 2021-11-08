@@ -1,5 +1,5 @@
-#include <string>
 #include <stdexcept>
+#include <string>
 
 #include "Logger.h"
 
@@ -9,33 +9,34 @@
 #include "ControllerBase.h"
 
 // Forward declaration
-template<>
-IController* Factory<IController>::create( const std::string &, const std::string & );
+template <>
+IController *Factory< IController >::create( const std::string &,
+                                             const std::string & );
 
-template<>
-IController* Factory<IController>::create( const std::string & type )
+template <>
+IController *Factory< IController >::create( const std::string &type )
 {
-	return Factory<IController>::create( type, "controller" );
+    return Factory< IController >::create( type, "controller" );
 }
 
-template<>
-IController* Factory<IController>::create( const std::string & type, const std::string & name )
+template <>
+IController *Factory< IController >::create( const std::string &type,
+                                             const std::string &name )
 {
-	IController* controller = nullptr;
+    IController *controller = nullptr;
 
-	logger::debug("Controller Factory: create [{}]", type);
+    logger::debug( "Controller Factory: create [{}]", type );
 
-	if( type.find("MqttController") != std::string::npos )
-	{
-		Factory<IClient>* fClient = new Factory<IClient>();
+    if ( type.find( "MqttController" ) != std::string::npos ) {
+        Factory< IClient > *fClient = new Factory< IClient >();
 
-		IClient* client = fClient->create( type, name + "/" + "client" );
+        IClient *client = fClient->create( type, name + "/" + "client" );
 
-		controller = new ControllerBase( name, client );
-	}
+        controller = new ControllerBase( name, client );
+    }
 
-	if( controller == nullptr ) 
-		throw std::runtime_error("failed to create controlller");
+    if ( controller == nullptr )
+        throw std::runtime_error( "failed to create controlller" );
 
-	return controller;
+    return controller;
 }
