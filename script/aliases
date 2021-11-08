@@ -8,10 +8,15 @@ fi
 # Navigation shorcuts
 alias cdp='cd $PROJECT_DIR/'
 alias cdb='cd $PROJECT_DIR/build'
+alias cdbi='cd $PROJECT_DIR/bin'
+
 alias cds='cd $PROJECT_DIR/src'
 alias cdsct='cd $PROJECT_DIR/src/controller'
 alias cdscl='cd $PROJECT_DIR/src/client'
+
 alias cdi='cd $PROJECT_DIR/include'
+alias cdim='cd $PROJECT_DIR/include/mocks'
+
 alias cdc='cd $PROJECT_DIR/config'
 
 # Docker shortcuts
