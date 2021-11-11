@@ -2,10 +2,11 @@ FROM debian:stable
 
 RUN apt-get update
 
-RUN apt-get install gcc g++ gdb make			 		\
-			git git-flow 			 		\
-			vim clang-format exuberant-ctags 		\ 
-			doxygen graphviz				\
+RUN apt-get install gcc g++ gdb make			 	\
+			git git-flow 			 	\
+			vim clang-format exuberant-ctags 	\ 
+			doxygen graphviz			\
+			postgresql-client			\
 			libssl-dev -y
 
 # Install CMake
@@ -64,6 +65,9 @@ RUN echo '/usr/local/lib/' >> aarch64-linux-gnu.conf	\
 
 # Configure bash script at startup
 WORKDIR /root
+
 COPY script/.bashrc /root/.bashrc
+COPY script/.bash_aliases /root/.bash_aliases
 COPY script/.vimrc /root/.vimrc
+
 CMD source /root/.bashrc

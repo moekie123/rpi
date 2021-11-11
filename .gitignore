@@ -3,7 +3,8 @@
 bin/
 build/
 lib/
-.generated/
+data/
+docs/
 
 tags
 core

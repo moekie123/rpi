@@ -35,3 +35,33 @@ services:
                         restart_policy:
                                condition: always
 
+        postgress:
+                container_name: database
+                image: postgres:latest
+                hostname: database
+
+                environment:
+                        POSTGRES_USER: postgres
+                        POSTGRES_PASSWORD: postgres
+                        POSTGRES_DB: postgres
+                        PGDATA: /postgres/data
+                   
+                expose:
+                        - 5432
+                ports:
+                        - "5432:5432"
+                volumes:
+                        - ./data:/postgres/data
+                deploy:
+                        restart_policy:
+                                condition: always
+
+        php:
+                container_name: documentation
+                image: php:8.0.12-apache
+                expose:
+                        - 80
+                ports:
+                        - "80:80"
+                volumes:
+                        - ./docs/html/:/var/www/html/
