@@ -63,10 +63,12 @@ WORKDIR /etc/ld.so.conf.d/
 RUN echo '/usr/local/lib/' >> aarch64-linux-gnu.conf	\
 		 && ldconfig
 
+ARG UID
 ARG USERNAME
 
 # Configure bash script at startup
-RUN useradd -r -m -u 1001 $USERNAME 
+RUN addgroup --gid $UID $USERNAME
+RUN useradd -r -m -u $UID -g $UID $USERNAME 
 USER $USERNAME
 
 WORKDIR /home/$USERNAME

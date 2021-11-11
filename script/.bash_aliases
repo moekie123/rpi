@@ -18,7 +18,7 @@ alias cdc='cd $PROJECT_DIR/config'
 alias dcu='docker-compose -f $PROJECT_DIR/docker-compose.yml up -d'
 alias dcd='docker-compose -f $PROJECT_DIR/docker-compose.yml stop'
 alias dca='docker attach environment'
-alias dcb='docker build --build-arg USERNAME=$USER . -t environment:latest'
+alias dcb='docker build --build-arg USERNAME=$USER --build-arg UID=$UID . -t environment:latest'
 
 # Build shortcuts
 alias build='make -C $PROJECT_DIR/build/ --no-print-directory'
