@@ -6,7 +6,7 @@ services:
                 hostname: environment
 
                 volumes:
-                        - ~/project:/root/project
+                        - ./:/home/rsalm/project
 
                 # Ensure the image doens't close right after startup
                 command: /bin/bash
@@ -45,13 +45,13 @@ services:
                         POSTGRES_PASSWORD: postgres
                         POSTGRES_DB: postgres
                         PGDATA: /postgres/data
-                   
+
                 expose:
                         - 5432
                 ports:
                         - "5432:5432"
                 volumes:
-                        - ./data:/postgres/data
+                        - ~/.postgres/:/postgres/data
                 deploy:
                         restart_policy:
                                 condition: always

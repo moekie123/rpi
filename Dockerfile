@@ -63,11 +63,16 @@ WORKDIR /etc/ld.so.conf.d/
 RUN echo '/usr/local/lib/' >> aarch64-linux-gnu.conf	\
 		 && ldconfig
 
+ARG USERNAME
+
 # Configure bash script at startup
-WORKDIR /root
+RUN useradd -r -m -u 1001 $USERNAME 
+USER $USERNAME
 
-COPY script/.bashrc /root/.bashrc
-COPY script/.bash_aliases /root/.bash_aliases
-COPY script/.vimrc /root/.vimrc
+WORKDIR /home/$USERNAME
 
-CMD source /root/.bashrc
+COPY script/.bashrc 		/home/$USERNAME/.bashrc
+COPY script/.bash_aliases 	/home/$USERNAME/.bash_aliases
+COPY script/.vimrc 		/home/$USERNAME/.vimrc
+
+CMD source 			/home/$USERNAME/.bashrc
