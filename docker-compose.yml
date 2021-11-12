@@ -2,11 +2,14 @@ version: "3.8"
 services:
         environment:
                 container_name: environment
-                image: environment:latest
                 hostname: environment
+                
+                build:
+                        context: .
+                        dockerfile: ./config/Dockerfile
 
                 volumes:
-                        - ./:/home/rsalm/project
+                        - ./:/root/project
 
                 # Ensure the image doens't close right after startup
                 command: /bin/bash
@@ -65,3 +68,8 @@ services:
                         - "80:80"
                 volumes:
                         - ./docs/html/:/var/www/html/
+
+                deploy:
+                        restart_policy:
+                                condition: always
+

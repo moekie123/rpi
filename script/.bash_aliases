@@ -1,4 +1,4 @@
-PROJECT_DIR='/home/rsalm/project/'
+PROJECT_DIR='/root/project'
 
 # Navigation shorcuts
 alias cdp='cd $PROJECT_DIR/'
@@ -17,8 +17,8 @@ alias cdc='cd $PROJECT_DIR/config'
 # Docker shortcuts
 alias dcu='docker-compose -f $PROJECT_DIR/docker-compose.yml up -d'
 alias dcd='docker-compose -f $PROJECT_DIR/docker-compose.yml stop'
+alias dcb='docker-compose build'
 alias dca='docker attach environment'
-alias dcb='docker build --build-arg USERNAME=$USER --build-arg UID=$UID . -t environment:latest'
 
 # Build shortcuts
 alias build='make -C $PROJECT_DIR/build/ --no-print-directory'
