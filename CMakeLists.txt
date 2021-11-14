@@ -1,18 +1,18 @@
 cmake_minimum_required (VERSION 3.21.0 )
 
 execute_process(
-        COMMAND git log -1 --format=%h
+        COMMAND git describe --tags --abbrev=0
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_VARIABLE GIT_HASH
         OUTPUT_STRIP_TRAILING_WHITESPACE
         )
 
-message( ${GIT_HASH} )
-
 project( Controller
-	VERSION "0.0.1"
+	VERSION ${GIT_HASH}
 	DESCRIPTION "Controller"
 	LANGUAGES CXX )
+
+message(${PROJECT_VERSION})
 
 message("Configure Project")
 set(CMAKE_CXX_STANDARD 17)
