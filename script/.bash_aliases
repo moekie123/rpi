@@ -25,5 +25,8 @@ alias build='make -C $PROJECT_DIR/build/ --no-print-directory'
 alias verify='make -C $PROJECT_DIR/build/ --no-print-directory test'
 alias format='make -C $PROJECT_DIR/build/ --no-print-directory clangformat'
 
+# Database
+alias db='psql -h database -d postgres -U postgres'
+
 # Include binaries
 export PATH=$PROJECT_DIR/bin:$PATH

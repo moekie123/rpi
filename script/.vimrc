@@ -2,7 +2,7 @@ syntax on
 
 set tabstop=4
 
-set listchars+=space:-
+set listchars+=space:.
 set list
 
 set tags=/root/project/tags
