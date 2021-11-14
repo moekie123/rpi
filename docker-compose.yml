@@ -1,0 +1,75 @@
+version: "3.8"
+services:
+        environment:
+                container_name: environment
+                hostname: environment
+                
+                build:
+                        context: .
+                        dockerfile: ./config/Dockerfile
+
+                volumes:
+                        - ./:/root/project
+
+                # Ensure the image doens't close right after startup
+                command: /bin/bash
+                stdin_open: true        # docker run -i
+                tty: true               # docker run -t
+                
+                deploy:               
+                        restart_policy:
+                               condition: always
+
+        mosquitto:
+                container_name: mosquitto
+                image: eclipse-mosquitto:latest
+                hostname: mosquitto
+                
+                expose:
+                        - 1883
+                        - 9001
+                ports:
+                        - "1883:1883"
+                        - "9001:9001"
+                volumes:
+                        - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+                
+                deploy:
+                        restart_policy:
+                               condition: always
+
+        postgress:
+                container_name: database
+                image: postgres:latest
+                hostname: database
+
+                environment:
+                        POSTGRES_USER: postgres
+                        POSTGRES_PASSWORD: postgres
+                        POSTGRES_DB: postgres
+                        PGDATA: /postgres/data
+
+                expose:
+                        - 5432
+                ports:
+                        - "5432:5432"
+                volumes:
+                        - ~/.postgres/:/postgres/data
+                deploy:
+                        restart_policy:
+                                condition: always
+
+        php:
+                container_name: documentation
+                image: php:8.0.12-apache
+                expose:
+                        - 80
+                ports:
+                        - "80:80"
+                volumes:
+                        - ./docs/html/:/var/www/html/
+
+                deploy:
+                        restart_policy:
+                                condition: always
+

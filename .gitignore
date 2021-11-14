@@ -1,0 +1,10 @@
+# Exclude directories
+
+bin/
+build/
+lib/
+data/
+docs/
+
+tags
+core
