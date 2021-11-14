@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 3.21.0 )
 
-project(Controller VERSION 1.0 DESCRIPTION "Controller" LANGUAGES CXX )
+project( Controller
+	VERSION "0.0.1"
+	DESCRIPTION "Controller"
+	LANGUAGES CXX )
 
 message("Configure Project")
 set(CMAKE_CXX_STANDARD 17)
