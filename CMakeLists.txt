@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.21.0 )
 
 execute_process(
-        COMMAND git log -1 --format=%h
+        COMMAND git describe --tags --abbrev=0
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_VARIABLE GIT_HASH
         OUTPUT_STRIP_TRAILING_WHITESPACE
