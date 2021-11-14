@@ -7,6 +7,7 @@
 #include "Observable.h"
 #include "Observer.h"
 
+//! Client Interface
 class IClient : public virtual Generic,
                 public Runnable,
                 public Observable,

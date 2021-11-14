@@ -7,15 +7,12 @@
 
 #include "ClientBase.h"
 
-// Forware declaration
-template <>
-IClient *Factory< IClient >::create( const std::string &, const std::string & );
-
-template <> IClient *Factory< IClient >::create( const std::string &type )
-{
-    return Factory< IClient >::create( type, "client" );
-}
-
+//! Entity creator
+/*!
+ *	\param type The derived class from which the returned base is derived
+ *  \param name The name of created object
+ *	\return Base class from the created type
+ */
 template <>
 IClient *Factory< IClient >::create( const std::string &type,
                                      const std::string &name )
@@ -35,3 +32,14 @@ IClient *Factory< IClient >::create( const std::string &type,
 
     return client;
 }
+
+//! Entity creator
+/*!
+ *	\param type The derived class from which the returned base is derived
+ *	\return Base class from the created type
+ */
+template <> IClient *Factory< IClient >::create( const std::string &type )
+{
+    return Factory< IClient >::create( type, "client" );
+}
+

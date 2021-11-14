@@ -30,14 +30,30 @@ struct eDisconnected : tinyfsm::Event {
 struct eRetry : tinyfsm::Event {
 };
 
-/* Client Base State */
+//!  Client Base State
+/*!
+        All states in the FSM should have this ClientState as base class.
+*/
 class ClientState : public tinyfsm::Fsm< ClientState >, public Observable {
 
   public:
-    ClientState( const std::string _name ) : name( _name ) {}
+    //! Base constructor
+    /*!
+            \param name The name of the state, without the path
+    */
+    ClientState( const std::string name ) : name( name ) {}
 
-    /* State transitions */
+    /*!
+     * This should contain state specific logic when entering the state. 
+	 * It is invoked by the entry() method and should be overriden in the derived class.
+     */
     virtual inline void entering(){};
+
+    //! The 'entering state' callback for the FSM
+    /*!
+     * This method functions as a wrapper around entering().
+	 * When entering a state the 'retry counter' will be reset, and the entering() method will be invoked.
+     */
     void entry( void )
     {
         logger::trace( prefix + "/" + name + ": entry" );
@@ -47,36 +63,57 @@ class ClientState : public tinyfsm::Fsm< ClientState >, public Observable {
         entering();
     }
 
+    /*!
+     * This should contain state specific logic when exiting the state.
+ 	 * It is invoked by the exit() method and should be overriden in the derived class.
+   	 */
     virtual inline void exiting(){};
+
+    //! The 'exiting state' callback for the FSM
+    /*!
+     * This method functions as a wrapper around exiting().
+     * When exiting a state the exiting() method will be invoked.
+     */
     void exit( void )
     {
         logger::trace( prefix + "/" + name + ": exit" );
         exiting();
     };
 
-    /* Event bases */
+	
+	//! General Event
     virtual void react( const tinyfsm::Event & )
     {
         throw std::logic_error( "not implemented" );
     };
 
+	//! Startup Event
     virtual void react( const eStartup & )
     {
         throw std::logic_error( "not implemented" );
     };
 
+	//! Connected Event
     virtual void react( const eConnected & )
     {
         throw std::logic_error( "not implemented" );
     };
 
+	//! Disconnected Event
     virtual void react( const eDisconnected & )
     {
         throw std::logic_error( "not implemented" );
     };
 
+	//! This should contain the state specific logic when retrying the state
     virtual inline void retry(){};
-    void react( const eRetry & )
+
+ 	//! The 'retrying event' callback for the FSM
+	/*!
+	 *	This method funtions as a wrapper around retry()
+	 *	When retry event is triggerd the retry() mehtod is invoked
+	 */	
+	void react( const eRetry & )
     {
         logger::trace( prefix + "/" + name + ": retry [{}/{}]", retryCntr,
                        retryMax );
@@ -89,13 +126,21 @@ class ClientState : public tinyfsm::Fsm< ClientState >, public Observable {
         retryCntr++;
     }
 
+	//! This should contain the state specific logic when terminate event is triggered
     virtual inline void terminate(){};
-    void react( const eTerminate & )
+ 	
+	//! The 'terminate event' callback for the FSM
+	/*!
+	 * This method functions as a wrapper around terminate()
+	 * When the terminate event is triggered the terminate() method is invoked
+	 */	
+ 	void react( const eTerminate & )
     {
         logger::trace( prefix + "/" + name + ": eTerminate" );
         terminate();
     };
 
+	//! Visitor pattern: Attach the protocol
     static void accept( IProtocol *protocol )
     {
         logger::trace( prefix + ": accept protocol: {}", fmt::ptr( protocol ) );
@@ -103,11 +148,21 @@ class ClientState : public tinyfsm::Fsm< ClientState >, public Observable {
         ClientState::protocol = protocol;
     }
 
+    /*!
+     * The absolute path of the object
+     */
     static inline std::string prefix = "/";
 
   protected:
-    // Configuration
+    /*!
+     * The name of the state
+     */
     const std::string name;
+
+    /*!
+     * The communication protocol through which the client statemachine shall
+     * exchange data
+     */
     static inline IProtocol *protocol = nullptr;
 
   private:
@@ -115,6 +170,7 @@ class ClientState : public tinyfsm::Fsm< ClientState >, public Observable {
     int retryCntr;
 };
 
+//! Concrete State: Uninitialized
 class sUninitialized : public ClientState {
   public:
     sUninitialized() : ClientState( "uninitialized" ) {}
@@ -128,6 +184,7 @@ class sUninitialized : public ClientState {
     };
 };
 
+//! Concrete State: Connecting
 class sConnecting : public ClientState {
   public:
     sConnecting() : ClientState( "connecting" ) {}
@@ -145,7 +202,7 @@ class sConnecting : public ClientState {
     inline void terminate() override { ClientState::transit< sTerminated >(); };
 };
 
-/* Idle State */
+//! Concrete State: Idle
 class sIdle : public ClientState {
   public:
     sIdle() : ClientState( "idle" ) {}
@@ -157,7 +214,7 @@ class sIdle : public ClientState {
     };
 };
 
-/* Disconnecting State */
+//! Concrete State: Disconnecting
 class sDisconnecting : public ClientState {
   public:
     sDisconnecting() : ClientState( "disconnecting" ) {}
@@ -173,7 +230,7 @@ class sDisconnecting : public ClientState {
     void retry() override { protocol->disconnect(); }
 };
 
-/* Terminate State */
+//! Concrete State: Terminated
 class sTerminated : public ClientState {
   public:
     sTerminated() : ClientState( "terminated" ) {}
@@ -182,7 +239,7 @@ class sTerminated : public ClientState {
     inline void entering() override { protocol->destroy(); }
 };
 
-/* Error State */
+//! Concrete State: Error
 class sError : public ClientState {
   public:
     sError() : ClientState( "error" ) {}

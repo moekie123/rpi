@@ -1,6 +1,11 @@
 syntax on
 
-set tags=~/project/tags
+set tabstop=4
+
+set listchars+=space:-
+set list
+
+set tags=/root/project/tags
 
 set previewheight=150
 nnoremap <C-]> :execute "vertical ptag " . expand("<cword>")<CR>

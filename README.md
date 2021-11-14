@@ -1,2 +1,3 @@
 # Setup development environment
-- Execute setup.sh in the root directory of the project
+
+Startup docker-compose in the root directory

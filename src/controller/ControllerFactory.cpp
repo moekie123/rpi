@@ -8,17 +8,12 @@
 
 #include "ControllerBase.h"
 
-// Forward declaration
-template <>
-IController *Factory< IController >::create( const std::string &,
-                                             const std::string & );
-
-template <>
-IController *Factory< IController >::create( const std::string &type )
-{
-    return Factory< IController >::create( type, "controller" );
-}
-
+//! Entity creator
+/*!
+ *	\param type The derived class from which the returned base is derived
+ *  \param name The name of created object
+ *	\return Base class from the created type
+ */
 template <>
 IController *Factory< IController >::create( const std::string &type,
                                              const std::string &name )
@@ -39,4 +34,17 @@ IController *Factory< IController >::create( const std::string &type,
         throw std::runtime_error( "failed to create controlller" );
 
     return controller;
+}                                         
+
+//! Entity creator
+/*!
+ *	\param type The derived class from which the returned base is derived
+ *	\return Base class from the created type
+ */
+template <>
+IController *Factory< IController >::create( const std::string &type )
+{
+    return Factory< IController >::create( type, "controller" );
 }
+
+

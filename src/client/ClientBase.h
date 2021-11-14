@@ -7,9 +7,15 @@
 #include "Observable.h"
 #include "Observer.h"
 
+//! Base class for all Clients
 class ClientBase : public IClient {
   public:
-    ClientBase( const std::string, IProtocol * );
+	
+	/*!
+	 * \param name
+	 * \param protocol
+	 */
+    ClientBase( const std::string name, IProtocol* protocol );
 
     ~ClientBase();
 
@@ -18,5 +24,5 @@ class ClientBase : public IClient {
     void stop() override;
 
     /* Observer */
-    void update( const std::string &, const void * ) override;
+    void update( const std::string& cmd, const void* data ) override;
 };

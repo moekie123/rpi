@@ -6,6 +6,7 @@
 #include "Observable.h"
 #include "Observer.h"
 
+//! Controller Interface
 class IController : public virtual Generic,
                     public Runnable,
                     public Observable,
