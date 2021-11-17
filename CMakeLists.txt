@@ -27,8 +27,10 @@ include(cmake/clang-format.cmake)
 include(cmake/doxygen.cmake)
 include(cmake/googletest.cmake)
 
+set( CMAKE_POSITION_INDEPENDENT_CODE ON )
+
 include_directories(include)
 add_subdirectory(src)
 
 add_executable(Controller main.cpp)
-target_link_libraries(Controller controller client protocol mosquitto pthread)
+target_link_libraries(Controller framework mosquitto pthread)

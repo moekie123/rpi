@@ -19,6 +19,8 @@ alias cdim='cd $PROJECT_DIR/include/mocks'
 
 alias cdc='cd $PROJECT_DIR/config'
 
+alias cdl='cd $PROJECT_DIR/lib'
+
 # Docker shortcuts
 alias dcu='docker-compose -f $PROJECT_DIR/docker-compose.yml up -d'
 alias dcd='docker-compose -f $PROJECT_DIR/docker-compose.yml stop'

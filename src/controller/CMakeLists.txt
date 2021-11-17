@@ -1,4 +1,4 @@
-add_library( controller OBJECT 
+add_library( controller-objs OBJECT 
 	ControllerBase.cpp 
 	ControllerFactory.cpp )
 
