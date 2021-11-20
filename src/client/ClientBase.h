@@ -10,12 +10,11 @@
 //! Base class for all Clients
 class ClientBase : public IClient {
   public:
-	
-	/*!
-	 * \param name
-	 * \param protocol
-	 */
-    ClientBase( const std::string name, IProtocol* protocol );
+    /*!
+     * \param name
+     * \param protocol
+     */
+    ClientBase( const std::string name, IProtocol *protocol );
 
     ~ClientBase();
 
@@ -24,5 +23,5 @@ class ClientBase : public IClient {
     void stop() override;
 
     /* Observer */
-    void update( const std::string& cmd, const void* data ) override;
+    void update( const std::string &cmd, const void *data ) override;
 };

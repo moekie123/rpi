@@ -9,12 +9,10 @@
 class Generic {
 
   public:
-
-	//! (Getter) Name
+    //! (Getter) Name
     const std::string &getName() { return name; }
 
   protected:
-
-	//! The name of the object
+    //! The name of the object
     std::string name;
 };

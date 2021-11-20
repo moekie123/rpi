@@ -34,7 +34,7 @@ IController *Factory< IController >::create( const std::string &type,
         throw std::runtime_error( "failed to create controlller" );
 
     return controller;
-}                                         
+}
 
 //! Entity creator
 /*!
@@ -46,5 +46,3 @@ IController *Factory< IController >::create( const std::string &type )
 {
     return Factory< IController >::create( type, "controller" );
 }
-
-

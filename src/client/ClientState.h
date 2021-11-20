@@ -44,15 +44,17 @@ class ClientState : public tinyfsm::Fsm< ClientState >, public Observable {
     ClientState( const std::string name ) : name( name ) {}
 
     /*!
-     * This should contain state specific logic when entering the state. 
-	 * It is invoked by the entry() method and should be overriden in the derived class.
+     * This should contain state specific logic when entering the state.
+     * It is invoked by the entry() method and should be overriden in the
+     * derived class.
      */
     virtual inline void entering(){};
 
     //! The 'entering state' callback for the FSM
     /*!
      * This method functions as a wrapper around entering().
-	 * When entering a state the 'retry counter' will be reset, and the entering() method will be invoked.
+     * When entering a state the 'retry counter' will be reset, and the
+     * entering() method will be invoked.
      */
     void entry( void )
     {
@@ -65,8 +67,9 @@ class ClientState : public tinyfsm::Fsm< ClientState >, public Observable {
 
     /*!
      * This should contain state specific logic when exiting the state.
- 	 * It is invoked by the exit() method and should be overriden in the derived class.
-   	 */
+     * It is invoked by the exit() method and should be overriden in the derived
+     * class.
+     */
     virtual inline void exiting(){};
 
     //! The 'exiting state' callback for the FSM
@@ -80,40 +83,39 @@ class ClientState : public tinyfsm::Fsm< ClientState >, public Observable {
         exiting();
     };
 
-	
-	//! General Event
+    //! General Event
     virtual void react( const tinyfsm::Event & )
     {
         throw std::logic_error( "not implemented" );
     };
 
-	//! Startup Event
+    //! Startup Event
     virtual void react( const eStartup & )
     {
         throw std::logic_error( "not implemented" );
     };
 
-	//! Connected Event
+    //! Connected Event
     virtual void react( const eConnected & )
     {
         throw std::logic_error( "not implemented" );
     };
 
-	//! Disconnected Event
+    //! Disconnected Event
     virtual void react( const eDisconnected & )
     {
         throw std::logic_error( "not implemented" );
     };
 
-	//! This should contain the state specific logic when retrying the state
+    //! This should contain the state specific logic when retrying the state
     virtual inline void retry(){};
 
- 	//! The 'retrying event' callback for the FSM
-	/*!
-	 *	This method funtions as a wrapper around retry()
-	 *	When retry event is triggerd the retry() mehtod is invoked
-	 */	
-	void react( const eRetry & )
+    //! The 'retrying event' callback for the FSM
+    /*!
+     *	This method funtions as a wrapper around retry()
+     *	When retry event is triggerd the retry() mehtod is invoked
+     */
+    void react( const eRetry & )
     {
         logger::trace( prefix + "/" + name + ": retry [{}/{}]", retryCntr,
                        retryMax );
@@ -126,21 +128,22 @@ class ClientState : public tinyfsm::Fsm< ClientState >, public Observable {
         retryCntr++;
     }
 
-	//! This should contain the state specific logic when terminate event is triggered
+    //! This should contain the state specific logic when terminate event is
+    //! triggered
     virtual inline void terminate(){};
- 	
-	//! The 'terminate event' callback for the FSM
-	/*!
-	 * This method functions as a wrapper around terminate()
-	 * When the terminate event is triggered the terminate() method is invoked
-	 */	
- 	void react( const eTerminate & )
+
+    //! The 'terminate event' callback for the FSM
+    /*!
+     * This method functions as a wrapper around terminate()
+     * When the terminate event is triggered the terminate() method is invoked
+     */
+    void react( const eTerminate & )
     {
         logger::trace( prefix + "/" + name + ": eTerminate" );
         terminate();
     };
 
-	//! Visitor pattern: Attach the protocol
+    //! Visitor pattern: Attach the protocol
     static void accept( IProtocol *protocol )
     {
         logger::trace( prefix + ": accept protocol: {}", fmt::ptr( protocol ) );

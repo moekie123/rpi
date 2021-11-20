@@ -8,3 +8,6 @@ docs/
 
 tags
 core
+
+# Generated files
+include/processor.h
