@@ -7,7 +7,9 @@ RUN apt-get install gcc g++ gdb make			 	\
 			vim clang-format exuberant-ctags 	\ 
 			doxygen graphviz			\
 			postgresql-client			\
-			libssl-dev -y
+			libssl-dev 				\
+			sudo					\
+			bash-completion -y
 
 # Install CMake
 WORKDIR /opt/cmake
@@ -63,11 +65,30 @@ WORKDIR /etc/ld.so.conf.d/
 RUN echo '/usr/local/lib/' >> aarch64-linux-gnu.conf	\
 		 && ldconfig
 
-# Configure bash script at startup
-WORKDIR /root/
+# Create User
+ARG HOST_UID
+ARG HOST_GID
+ARG WHO
 
-COPY script/.bashrc 		/root/.bashrc
-COPY script/.bash_aliases 	/root/.bash_aliases
-COPY script/.vimrc 		/root/.vimrc
+RUN groupadd ${WHO}
+RUN groupmod -o -g ${HOST_GID} ${WHO}
 
-CMD source 			/root/.bashrc
+RUN useradd -d /home/${WHO} -ms /bin/bash -p ${WHO} -g ${WHO} ${WHO} 
+RUN echo "${WHO}:${WHO}" | chpasswd
+RUN usermod -u ${HOST_UID} ${WHO}
+RUN usermod -g ${HOST_GID} ${WHO}
+RUN usermod -a -G sudo ${WHO}
+
+USER ${WHO}
+
+# Add Environment Scripts
+ARG HOME_DIR=/home/${WHO}
+WORKDIR ${HOME_DIR}
+
+COPY script/* 	${HOME_DIR}/
+CMD source 	${HOME_DIR}/.bashrc
+
+# Configure user specifics
+RUN git config --global user.name "${WHO}"
+RUN git config --global user.email "-private-"
+
