@@ -63,11 +63,30 @@ WORKDIR /etc/ld.so.conf.d/
 RUN echo '/usr/local/lib/' >> aarch64-linux-gnu.conf	\
 		 && ldconfig
 
-# Configure bash script at startup
-WORKDIR /root/
+# Create User
+ARG HOST_UID
+ARG HOST_GID
+ARG WHO
 
-COPY script/.bashrc 		/root/.bashrc
-COPY script/.bash_aliases 	/root/.bash_aliases
-COPY script/.vimrc 		/root/.vimrc
+ARG HOME_DIR=/home/${WHO}
 
-CMD source 			/root/.bashrc
+RUN groupadd ${WHO}
+RUN groupmod -o -g ${HOST_GID} ${WHO}
+
+RUN useradd -d /home/${WHO} -ms /bin/bash -g ${WHO} ${WHO} 
+RUN usermod -u ${HOST_UID} ${WHO}
+RUN usermod -g ${HOST_GID} ${WHO}
+
+WORKDIR ${HOME_DIR}
+
+COPY script/.bashrc 		${HOME_DIR}/.bashrc
+COPY script/.bash_aliases 	${HOME_DIR}/.bash_aliases
+COPY script/.vimrc 		${HOME_DIR}/.vimrc
+RUN chown -R ${WHO}		${HOME_DIR}/
+
+USER ${WHO}
+
+RUN git config --global user.name "${WHO}"
+RUN git config --global user.email "-private-"
+
+CMD source 			${HOME_DIR}/.bashrc

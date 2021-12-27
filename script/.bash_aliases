@@ -1,4 +1,5 @@
-PROJECT_DIR='/root/project'
+export USER=$(whoami)
+PROJECT_DIR='/home/'$USER'/project'
 
 # Navigation shorcuts
 alias cdp='cd $PROJECT_DIR/'
