@@ -71,7 +71,7 @@ int main( int argc, char **argv )
     Factory< IController > *fController = new Factory< IController >();
     controller = fController->create( "MqttController" );
 
-// Start Controlller
+    // Start Controlller
     controller->start();
 
     while ( controller->isRunning() )
