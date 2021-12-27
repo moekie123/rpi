@@ -37,5 +37,3 @@ template <> IProtocol *Factory< IProtocol >::create( const std::string &type )
 {
     return Factory< IProtocol >::create( type, "protocol" );
 }
-
-

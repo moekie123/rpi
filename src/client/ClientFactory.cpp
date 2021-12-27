@@ -42,4 +42,3 @@ template <> IClient *Factory< IClient >::create( const std::string &type )
 {
     return Factory< IClient >::create( type, "client" );
 }
-

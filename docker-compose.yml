@@ -1,17 +1,20 @@
 version: "3.8"
 services:
-        environment:
-                container_name: environment
-                hostname: environment
+        env-develop:
+                container_name: env-develop
+                hostname: develop
                 
                 build:
                         context: .
                         dockerfile: ./config/Dockerfile
 
+                        args:
+                                HOST_UID: "${HOST_UID}"
+                                HOST_GID: "${HOST_GID}"
+                                WHO: "${WHO}"
                 volumes:
-                        - ./:/root/project
+                        - ./:/home/${WHO}/project
 
-                # Ensure the image doens't close right after startup
                 command: /bin/bash
                 stdin_open: true        # docker run -i
                 tty: true               # docker run -t
@@ -38,8 +41,8 @@ services:
                         restart_policy:
                                condition: always
 
-        postgress:
-                container_name: database
+        postgres:
+                container_name: postgres
                 image: postgres:latest
                 hostname: database
 

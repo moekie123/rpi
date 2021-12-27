@@ -1,4 +1,4 @@
-add_library( client OBJECT 
+add_library( client-objs OBJECT 
 	ClientBase.cpp 
 	ClientFactory.cpp )
 

@@ -9,8 +9,7 @@
 //! Base class for controllers
 class ControllerBase : public IController {
   public:
-
-	//! Constructor
+    //! Constructor
     ControllerBase( const std::string, IClient * );
     ~ControllerBase();
 

@@ -1,6 +1,5 @@
-add_library( protocol OBJECT 
+add_library( protocol-objs OBJECT 
 	ProtocolFactory.cpp
-	MqttProtocol.cpp
-        )
+	MqttProtocol.cpp)
 
 add_subdirectory( test )
