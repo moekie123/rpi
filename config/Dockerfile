@@ -7,7 +7,9 @@ RUN apt-get install gcc g++ gdb make			 	\
 			vim clang-format exuberant-ctags 	\ 
 			doxygen graphviz			\
 			postgresql-client			\
-			libssl-dev -y
+			libssl-dev 				\
+			sudo					\
+			bash-completion -y
 
 # Install CMake
 WORKDIR /opt/cmake
@@ -68,25 +70,25 @@ ARG HOST_UID
 ARG HOST_GID
 ARG WHO
 
-ARG HOME_DIR=/home/${WHO}
-
 RUN groupadd ${WHO}
 RUN groupmod -o -g ${HOST_GID} ${WHO}
 
-RUN useradd -d /home/${WHO} -ms /bin/bash -g ${WHO} ${WHO} 
+RUN useradd -d /home/${WHO} -ms /bin/bash -p ${WHO} -g ${WHO} ${WHO} 
+RUN echo "${WHO}:${WHO}" | chpasswd
 RUN usermod -u ${HOST_UID} ${WHO}
 RUN usermod -g ${HOST_GID} ${WHO}
-
-WORKDIR ${HOME_DIR}
-
-COPY script/.bashrc 		${HOME_DIR}/.bashrc
-COPY script/.bash_aliases 	${HOME_DIR}/.bash_aliases
-COPY script/.vimrc 		${HOME_DIR}/.vimrc
-RUN chown -R ${WHO}		${HOME_DIR}/
+RUN usermod -a -G sudo ${WHO}
 
 USER ${WHO}
 
+# Add Environment Scripts
+ARG HOME_DIR=/home/${WHO}
+WORKDIR ${HOME_DIR}
+
+COPY script/* 	${HOME_DIR}/
+CMD source 	${HOME_DIR}/.bashrc
+
+# Configure user specifics
 RUN git config --global user.name "${WHO}"
 RUN git config --global user.email "-private-"
 
-CMD source 			${HOME_DIR}/.bashrc
