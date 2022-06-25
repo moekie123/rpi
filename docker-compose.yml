@@ -12,16 +12,18 @@ services:
                                 HOST_UID: "${HOST_UID}"
                                 HOST_GID: "${HOST_GID}"
                                 WHO: "${WHO}"
-                volumes:
-                        - ./:/home/${WHO}/project
+                expose:
+                        - 22
+                ports:
+                        - "22:22"
+                #volumes:
+                #        - ./:/home/${WHO}/project
 
-                command: /bin/bash
+                #command: /bin/bash
                 stdin_open: true        # docker run -i
                 tty: true               # docker run -t
                 
-                deploy:               
-                        restart_policy:
-                               condition: always
+                restart: always
 
         mosquitto:
                 container_name: mosquitto
@@ -37,9 +39,7 @@ services:
                 volumes:
                         - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
                 
-                deploy:
-                        restart_policy:
-                               condition: always
+                restart: always
 
         postgres:
                 container_name: postgres
@@ -58,9 +58,8 @@ services:
                         - "5432:5432"
                 volumes:
                         - ~/.postgres/:/postgres/data
-                deploy:
-                        restart_policy:
-                                condition: always
+
+                restart: always
 
         php:
                 container_name: documentation
@@ -72,7 +71,5 @@ services:
                 volumes:
                         - ./docs/html/:/var/www/html/
 
-                deploy:
-                        restart_policy:
-                                condition: always
+                restart: always
 
