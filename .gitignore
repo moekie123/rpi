@@ -11,3 +11,5 @@ core
 
 # Generated files
 include/processor.h
+
+.idea
